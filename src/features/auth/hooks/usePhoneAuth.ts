@@ -7,7 +7,7 @@ import {
   signInWithPhoneNumber,
 } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
-import { auth } from 'config/firebase';
+import { getFirebaseAuth } from 'config/firebase';
 import { registerNewUser } from '../utils/registerNewUser';
 
 type PhoneStatus = 'idle' | 'loading' | 'pending' | 'success' | 'error';
@@ -38,6 +38,7 @@ export function usePhoneAuth(): UsePhoneAuthReturn {
     setStatus('loading');
     setError(null);
     try {
+      const auth = getFirebaseAuth();
       if (!recaptchaRef.current) {
         recaptchaRef.current = new RecaptchaVerifier(auth, containerId, {
           size: 'invisible',

@@ -38,7 +38,7 @@ jest.mock('next/image', () => ({
 jest.mock('firebase/auth', () => ({}));
 
 jest.mock('config/firebase', () => ({
-  auth: {},
+  getFirebaseAuth: jest.fn(() => ({})),
 }));
 
 jest.mock('store/useAuthStore', () => ({

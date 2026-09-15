@@ -7,7 +7,7 @@ import {
   isSignInWithEmailLink,
   signInWithEmailLink,
 } from 'firebase/auth';
-import { auth } from 'config/firebase';
+import { getFirebaseAuth } from 'config/firebase';
 import { registerNewUser } from '../utils/registerNewUser';
 
 type EmailStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -36,6 +36,7 @@ export function useEmailAuth(): UseEmailAuthReturn {
     setStatus('loading');
     setError(null);
     try {
+      const auth = getFirebaseAuth();
       const actionCodeSettings = {
         url: `${window.location.origin}/auth/callback`,
         handleCodeInApp: true,
@@ -55,6 +56,8 @@ export function useEmailAuth(): UseEmailAuthReturn {
   const confirmSignIn = async (
     emailOverride?: string
   ): Promise<ConfirmResult> => {
+    const auth = getFirebaseAuth();
+
     if (!isSignInWithEmailLink(auth, window.location.href))
       return 'needs-email';
 

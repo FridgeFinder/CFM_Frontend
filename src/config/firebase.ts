@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from 'firebase/app';
-import { getAuth, connectAuthEmulator } from 'firebase/auth';
+import { getAuth, connectAuthEmulator, Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -10,13 +10,24 @@ const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID!,
 };
 
-const app =
-  getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
-export const auth = getAuth(app);
+let auth: Auth | undefined;
+let isAuthEmulatorConnected = false;
 
-if (
-  typeof window !== 'undefined' &&
-  process.env.NEXT_PUBLIC_FIREBASE_USE_EMULATOR === 'true'
-) {
-  connectAuthEmulator(auth, 'http://localhost:9099', { disableWarnings: true });
-}
+export const getFirebaseAuth = (): Auth => {
+  const app =
+    getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  auth ??= getAuth(app);
+
+  if (
+    typeof window !== 'undefined' &&
+    process.env.NEXT_PUBLIC_FIREBASE_USE_EMULATOR === 'true' &&
+    !isAuthEmulatorConnected
+  ) {
+    connectAuthEmulator(auth, 'http://localhost:9099', {
+      disableWarnings: true,
+    });
+    isAuthEmulatorConnected = true;
+  }
+
+  return auth;
+};

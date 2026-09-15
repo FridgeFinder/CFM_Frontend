@@ -31,7 +31,7 @@ import DarkModeOutlinedIcon from '@mui/icons-material/DarkModeOutlined';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import ComputerIcon from '@mui/icons-material/Computer';
 import { signOut } from 'firebase/auth';
-import { auth } from 'config/firebase';
+import { getFirebaseAuth } from 'config/firebase';
 import { SuccessToast } from 'components/ui';
 import {
   clearUserProfileCache,
@@ -206,7 +206,7 @@ export default function SettingsPage(): React.ReactElement {
   const handleSignOut = async (): Promise<void> => {
     try {
       resetFollowing();
-      await signOut(auth);
+      await signOut(getFirebaseAuth());
       router.push('/');
     } catch {
       showErrorSnackbar('Could not sign out right now. Please try again.');
@@ -243,7 +243,7 @@ export default function SettingsPage(): React.ReactElement {
         clearUserProfileCache(user.uid);
       }
       useAuthStore.setState({ userProfile: null, userProfileStatus: 'idle' });
-      await signOut(auth);
+      await signOut(getFirebaseAuth());
       setDeleteConfirmOpen(false);
       router.replace('/auth/signin');
     } catch (error) {

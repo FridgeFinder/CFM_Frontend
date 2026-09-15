@@ -14,7 +14,7 @@ import {
 } from '@mui/material';
 import { useAuthStore } from 'store/useAuthStore';
 import { signOut } from 'firebase/auth';
-import { auth } from 'config/firebase';
+import { getFirebaseAuth } from 'config/firebase';
 import { designColor } from 'theme/palette';
 import { authCardSx } from 'features/auth/auth.styles';
 import {
@@ -126,7 +126,7 @@ export default function LinkEmailPage() {
               variant="contained"
               fullWidth
               onClick={async () => {
-                await signOut(auth);
+                await signOut(getFirebaseAuth());
                 router.replace('/auth/signin');
               }}
               sx={{

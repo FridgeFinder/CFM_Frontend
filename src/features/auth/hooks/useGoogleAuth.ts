@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { GoogleAuthProvider, signInWithPopup } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
-import { auth } from 'config/firebase';
+import { getFirebaseAuth } from 'config/firebase';
 import { registerNewUser } from '../utils/registerNewUser';
 
 type GoogleStatus = 'idle' | 'loading' | 'error';
@@ -38,6 +38,7 @@ export function useGoogleAuth(): UseGoogleAuthReturn {
     );
 
     try {
+      const auth = getFirebaseAuth();
       const credential = await signInWithPopup(auth, provider);
       await registerNewUser(credential);
       // onAuthStateChanged in AuthProvider picks up the signed-in user;

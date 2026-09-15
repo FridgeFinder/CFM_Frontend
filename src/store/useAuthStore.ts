@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { User, onAuthStateChanged } from 'firebase/auth';
-import { auth } from 'config/firebase';
+import { getFirebaseAuth } from 'config/firebase';
 
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 type UserProfileStatus = 'idle' | 'loading' | 'success' | 'error';
@@ -163,6 +163,8 @@ export const useAuthStore = create<AuthState>((set) => ({
 }));
 
 export const initAuthListener = (): (() => void) => {
+  const auth = getFirebaseAuth();
+
   return onAuthStateChanged(auth, (user) => {
     if (!user) {
       useAuthStore.setState({

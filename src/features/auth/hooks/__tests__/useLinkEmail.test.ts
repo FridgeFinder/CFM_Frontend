@@ -6,7 +6,6 @@ import {
   EmailAuthProvider,
   linkWithCredential,
 } from 'firebase/auth';
-import { auth } from 'config/firebase';
 import {
   useLinkEmail,
   confirmLinkEmail,
@@ -21,8 +20,12 @@ jest.mock('firebase/auth', () => ({
   linkWithCredential: jest.fn(),
 }));
 
+const mockAuth: { currentUser: null | { uid: string } } = {
+  currentUser: null,
+};
+
 jest.mock('config/firebase', () => ({
-  auth: { currentUser: null },
+  getFirebaseAuth: jest.fn(() => mockAuth),
 }));
 
 const mockSendSignInLinkToEmail = sendSignInLinkToEmail as jest.Mock;
@@ -30,12 +33,11 @@ const mockIsSignInWithEmailLink = isSignInWithEmailLink as jest.Mock;
 const mockCredentialWithLink =
   EmailAuthProvider.credentialWithLink as jest.Mock;
 const mockLinkWithCredential = linkWithCredential as jest.Mock;
-const mutableAuth = auth as { currentUser: null | { uid: string } };
 
 beforeEach(() => {
   jest.clearAllMocks();
   localStorage.clear();
-  mutableAuth.currentUser = null;
+  mockAuth.currentUser = null;
   mockIsSignInWithEmailLink.mockReturnValue(true);
 });
 
@@ -180,20 +182,20 @@ describe('confirmLinkEmail', () => {
   });
 
   it('throws no-user when there is no current user', async () => {
-    mutableAuth.currentUser = null;
+    mockAuth.currentUser = null;
 
     await expect(confirmLinkEmail()).rejects.toThrow('no-user');
   });
 
   it('throws needs-email when no email is available and no override is provided', async () => {
-    mutableAuth.currentUser = { uid: 'test-uid' };
+    mockAuth.currentUser = { uid: 'test-uid' };
 
     await expect(confirmLinkEmail()).rejects.toThrow('needs-email');
   });
 
   it('links the email credential and returns the email', async () => {
     const mockCredential = { providerId: 'email' };
-    mutableAuth.currentUser = { uid: 'test-uid' };
+    mockAuth.currentUser = { uid: 'test-uid' };
     localStorage.setItem(LINK_EMAIL_KEY, 'user@example.com');
     mockCredentialWithLink.mockReturnValue(mockCredential);
     mockLinkWithCredential.mockResolvedValue(undefined);
@@ -202,13 +204,13 @@ describe('confirmLinkEmail', () => {
 
     expect(email).toBe('user@example.com');
     expect(mockLinkWithCredential).toHaveBeenCalledWith(
-      mutableAuth.currentUser,
+      mockAuth.currentUser,
       mockCredential
     );
   });
 
   it('uses the emailOverride instead of localStorage', async () => {
-    mutableAuth.currentUser = { uid: 'test-uid' };
+    mockAuth.currentUser = { uid: 'test-uid' };
     mockCredentialWithLink.mockReturnValue({});
     mockLinkWithCredential.mockResolvedValue(undefined);
 
@@ -222,7 +224,7 @@ describe('confirmLinkEmail', () => {
   });
 
   it('removes LINK_EMAIL_KEY from localStorage on success', async () => {
-    mutableAuth.currentUser = { uid: 'test-uid' };
+    mockAuth.currentUser = { uid: 'test-uid' };
     localStorage.setItem(LINK_EMAIL_KEY, 'user@example.com');
     mockCredentialWithLink.mockReturnValue({});
     mockLinkWithCredential.mockResolvedValue(undefined);
@@ -233,7 +235,7 @@ describe('confirmLinkEmail', () => {
   });
 
   it('leaves LINK_EMAIL_RETURN_KEY in localStorage for the page to handle', async () => {
-    mutableAuth.currentUser = { uid: 'test-uid' };
+    mockAuth.currentUser = { uid: 'test-uid' };
     localStorage.setItem(LINK_EMAIL_KEY, 'user@example.com');
     localStorage.setItem(LINK_EMAIL_RETURN_KEY, '/settings');
     mockCredentialWithLink.mockReturnValue({});

@@ -8,7 +8,7 @@ import {
   linkWithCredential,
 } from 'firebase/auth';
 import { FirebaseError } from 'firebase/app';
-import { auth } from 'config/firebase';
+import { getFirebaseAuth } from 'config/firebase';
 
 type LinkEmailStatus = 'idle' | 'loading' | 'success' | 'error';
 
@@ -34,6 +34,7 @@ export function useLinkEmail(): UseLinkEmailReturn {
     setStatus('loading');
     setError(null);
     try {
+      const auth = getFirebaseAuth();
       const actionCodeSettings = {
         url: `${window.location.origin}/auth/link-email`,
         handleCodeInApp: true,
@@ -66,6 +67,8 @@ export function useLinkEmail(): UseLinkEmailReturn {
 export async function confirmLinkEmail(
   emailOverride?: string
 ): Promise<string> {
+  const auth = getFirebaseAuth();
+
   if (!isSignInWithEmailLink(auth, window.location.href)) {
     throw new Error('This link is not a valid email-link credential.');
   }

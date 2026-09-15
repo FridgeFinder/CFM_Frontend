@@ -4,7 +4,7 @@ const TEST_USERS_API_URL = 'https://users-api-fake.test.com';
 process.env.NEXT_PUBLIC_USERS_API_URL = TEST_USERS_API_URL;
 
 jest.mock('config/firebase', () => ({
-  auth: {},
+  getFirebaseAuth: jest.fn(() => ({})),
 }));
 
 jest.mock('firebase/auth', () => ({

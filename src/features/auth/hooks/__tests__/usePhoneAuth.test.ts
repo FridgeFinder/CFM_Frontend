@@ -9,7 +9,11 @@ jest.mock('firebase/auth', () => ({
   signInWithPhoneNumber: jest.fn(),
 }));
 
-jest.mock('config/firebase', () => ({ auth: {} }));
+const mockAuth = {};
+
+jest.mock('config/firebase', () => ({
+  getFirebaseAuth: jest.fn(() => mockAuth),
+}));
 
 jest.mock('features/auth/utils/registerNewUser', () => ({
   registerNewUser: jest.fn().mockResolvedValue(undefined),
