@@ -28,7 +28,7 @@ export async function generateStaticParams(): Promise<{ id: string }[]> {
 
 async function getFridgeInfo(id: string): Promise<Fridge | null> {
   try {
-    const response = await fetch(`${baseUrl}${encodeURIComponent(id)}`, {
+    const response = await fetch(`${baseUrl}${id}`, {
       headers: { Accept: 'application/json' },
       next: { revalidate: 3600 },
     });
