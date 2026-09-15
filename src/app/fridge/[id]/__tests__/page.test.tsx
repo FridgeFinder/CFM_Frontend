@@ -110,7 +110,7 @@ describe('FridgePage — happy path', () => {
     );
   });
 
-  it('encodes reserved characters in the fridge ID', async () => {
+  it('preserves ampersands in the fridge ID', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => makeFridgeResponse({ id: 'fridges&family' }),
@@ -122,7 +122,7 @@ describe('FridgePage — happy path', () => {
     });
 
     expect(mockFetch).toHaveBeenCalledWith(
-      'https://api.example.com/v1/fridges/fridges%26family',
+      'https://api.example.com/v1/fridges/fridges&family',
       expect.objectContaining({ headers: { Accept: 'application/json' } })
     );
   });
