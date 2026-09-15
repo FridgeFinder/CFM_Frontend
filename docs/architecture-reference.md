@@ -1,6 +1,7 @@
 # Architecture Reference
 
 - [Architecture decisions](./architecture-decisions.md)
+- [Caching strategies](./caching-strategies.md)
 - [REST API Contract](../src/model/data/fridge/REST.yaml)
 
 ## Development environments

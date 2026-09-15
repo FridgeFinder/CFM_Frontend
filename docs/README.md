@@ -31,6 +31,7 @@ Fridge Finder is based out of Brooklyn, New York. Our goal is to make it easy fo
 ## System Requirements
 
 1. [Node](https://nodejs.org/en/)
+1. [Firebase CLI](https://firebase.google.com/docs/cli) (required for the auth emulator)
 
 ## System Setup
 
@@ -62,7 +63,17 @@ Fridge Finder is based out of Brooklyn, New York. Our goal is to make it easy fo
    yarn test
    ```
 
+1. Start the Firebase Auth emulator
+
+   Auth sign-in is routed to the local Firebase emulator by default — no credentials are needed. Start the emulator before launching the app:
+
+   ```bash
+   yarn emulators
+   ```
+
 1. Run the application locally
+
+   In a new terminal window:
 
    ```bash
    # to run both development database and the web server
@@ -80,4 +91,20 @@ Fridge Finder is based out of Brooklyn, New York. Our goal is to make it easy fo
    ```bash
    start   "Google Chrome" http://localhost:3000/ # Windows
    open -a "Google Chrome" http://localhost:3000/ # MacOS
+   ```
+
+1. Connect to the real Firebase project (optional)
+
+   If you need to test against real Firebase Auth, create a `.env.local` file in the project root and ask a team member for the credentials for `FridgeFinder-Dev`:
+
+   ```bash
+   NEXT_PUBLIC_FIREBASE_API_KEY=
+   NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=
+   NEXT_PUBLIC_FIREBASE_PROJECT_ID=
+   NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=
+   NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=
+   NEXT_PUBLIC_FIREBASE_APP_ID=
+   NEXT_PUBLIC_FIREBASE_USE_EMULATOR=false
+   NEXT_PUBLIC_USERS_API_URL=https://users-api-dev.communityfridgefinder.com
+   NEXT_PUBLIC_NOTIFICATIONS_API_URL=https://notifications-api-dev.communityfridgefinder.com
    ```

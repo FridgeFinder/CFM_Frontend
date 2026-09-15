@@ -12,6 +12,7 @@ const createJestConfig = nextJest({
 const customJestConfig = {
   testEnvironment: 'jest-environment-jsdom',
   moduleDirectories: ['node_modules', 'src'],
+  setupFiles: ['<rootDir>/jest.setup.js'],
 
   setupFilesAfterEnv: ['@testing-library/jest-dom', '@testing-library/react'],
 };
