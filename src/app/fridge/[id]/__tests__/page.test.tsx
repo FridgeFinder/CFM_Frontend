@@ -109,6 +109,23 @@ describe('FridgePage — happy path', () => {
       expect.objectContaining({ headers: { Accept: 'application/json' } })
     );
   });
+
+  it('encodes reserved characters in the fridge ID', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: async () => makeFridgeResponse({ id: 'fridges&family' }),
+    });
+
+    await FridgePage({
+      params: makeParams('fridges&family'),
+      searchParams: makeSearchParams(),
+    });
+
+    expect(mockFetch).toHaveBeenCalledWith(
+      'https://api.example.com/v1/fridges/fridges%26family',
+      expect.objectContaining({ headers: { Accept: 'application/json' } })
+    );
+  });
 });
 
 describe('FridgePage — not found', () => {
