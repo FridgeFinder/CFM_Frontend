@@ -1,6 +1,7 @@
 # Architecture Reference
 
 - [Architecture decisions](./architecture-decisions.md)
+- [Caching strategies](./caching-strategies.md)
 - [REST API Contract](../src/model/data/fridge/REST.yaml)
 
 ## Development environments
@@ -10,9 +11,11 @@
 
 ## UI Design
 
+### Images
+
 - [Aspect Ratio Guide](https://www.cronyxdigital.com/blog/the-ultimate-website-image-guide)
 
-**image aspect ratio (width:height)**
+#### aspect ratio (width:height)
 
 hero image
 : aspect ratio is 16:9, preferred size 1366x768
@@ -22,6 +25,20 @@ paragraph image
 
 fridge photo
 : aspect ratio is 1:1.15, exact size 300x345
+
+##### screen size ranges (width x height)
+
+- Mobile: 360 x 640 to 414 x 896 pixels
+- Tablet: 601 x 962 to 1280 x 800 pixels
+- Desktop: 1280 x 720 to 1920 x 1080 pixels
+
+### MUI breakpoints (width)
+
+- xs, extra-small: 0px
+- sm, small: 600px
+- md, medium: 900px
+- lg, large: 1200px
+- xl, extra-large: 1536px
 
 ## Tools
 
@@ -81,6 +98,10 @@ fridge photo
 - REST Mock Server: [json-server](https://github.com/typicode/json-server)
 
 - Testing: [Jest](https://jestjs.io/docs/api), [React Testing Library](https://testing-library.com/docs/)
+
+- State Management: [zustand](https://zustand.docs.pmnd.rs/getting-started/introduction)
+
+- Fuzzy Search: [fuze.js](https://www.fusejs.io/)
 
 ## Design philosophy
 

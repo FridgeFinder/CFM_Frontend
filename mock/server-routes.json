@@ -1,4 +1,5 @@
 {
-  "/v1/*": "/$1",
-  "/v1/fridges/:fridgeId/reports": "/fridges/:fridgeId/reports"
+  "/v1/users/:userId/fridge-notifications/:fridgeId": "/fridge-notifications/:userId_:fridgeId",
+  "/v1/fridges/:fridgeId/reports": "/reports?fridgeId=:fridgeId",
+  "/v1/*": "/$1"
 }

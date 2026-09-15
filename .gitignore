@@ -35,3 +35,18 @@ yarn-error.log*
 # editor
 /.vscode/
 !/.vscode/launch.json
+
+# copilot agent skills (local tooling)
+/.agents/
+/skills-lock.json
+
+# firebase debug logs
+firebase-debug.log
+firebase-debug.*.log
+
+# typescript
+*.tsbuildinfo
+
+certificates
+package-lock.json
+

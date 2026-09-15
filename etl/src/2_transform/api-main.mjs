@@ -1,5 +1,5 @@
 import { readFileSync, writeFile } from 'node:fs';
-import schema from '../../../src/model/data/fridge/yup.js';
+import schema from '../../../src/model/data/fridge/yup/index.js';
 
 import urlExist from 'url-exist';
 import * as entities from 'entities';

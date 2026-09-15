@@ -1,0 +1,828 @@
+{
+  "users": [
+    {
+      "userId": "i8ReAmQxN7OFIVbDTgDECvAPV6iA",
+      "email": "test@fridgefinder.com",
+      "id": 1
+    }
+  ],
+  "fridges": [
+    {
+      "id": "barriofridge1",
+      "name": "Barrio Fridge #1",
+      "verified": false,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/thebarriofridge",
+        "website": "https://thebarriofridge.com/",
+        "email": "volunteers@thebarriofridge.com"
+      },
+      "location": {
+        "street": "339 East 108th Street",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10029",
+        "geoLat": 40.7911604,
+        "geoLng": -73.9393979
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "name": "Barrio Fridge #2",
+      "id": "barriofridge2",
+      "verified": false,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/thebarriofridge",
+        "website": "https://thebarriofridge.com/",
+        "email": "volunteers@thebarriofridge.com"
+      },
+      "location": {
+        "street": "314 East 106th Street",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10029",
+        "geoLat": 40.78999785,
+        "geoLng": -73.94161519709277
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "harlemcommunityfridge",
+      "name": "Harlem Community Fridge",
+      "verified": false,
+      "location": {
+        "street": "352 West 116th Street",
+        "city": "New York",
+        "state": "NY",
+        "zip": "10026",
+        "geoLat": 40.8049571,
+        "geoLng": -73.9570766,
+        "name": "Ralph & Nash Deli"
+      },
+      "maintainer": {
+        "instagram": "https://www.instagram.com/theharlemcommunityfridge"
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "livinggallery",
+      "name": "Living Gallery",
+      "location": {
+        "street": "1094 Broadway",
+        "city": "New York",
+        "state": "NY",
+        "zip": "11221",
+        "geoLat": 40.694207,
+        "geoLng": -73.930599
+      },
+      "maintainer": {
+        "instagram": "https://www.instagram.com/the_living_gallery",
+        "website": "http://linktr.ee/Thelivinggallery"
+      },
+      "photoUrl": "https://community-fridge-map-images-prod.s3.amazonaws.com/96c3a513-17b3-4760-983b-3ae7525d5deb.webp",
+      "last_edited": "1667513900",
+      "verified": false,
+      "latestFridgeReport": {
+        "fridgeId": "livinggallery",
+        "epochTimestamp": "1761978261",
+        "timestamp": "2025-11-01T06:24:21Z",
+        "condition": "ghost",
+        "foodPercentage": 1
+      }
+    },
+    {
+      "id": "B1hnEb",
+      "name": "Saticoy Community Fridge",
+      "location": {
+        "street": "1297 Los Angeles Ave",
+        "city": "Ventura",
+        "state": "CA",
+        "zip": "93004",
+        "geoLat": 34.28325936261995,
+        "geoLng": -119.14829879997373
+      },
+      "maintainer": {
+        "instagram": "https://www.instagram.com/saticoycommunityfridge",
+        "website": "https://linktr.ee/saticoyfarmersmarket"
+      },
+      "notes": "HOURS: Tuesday - Thursday 1:00-6:00 pm",
+      "photoUrl": "https://community-fridge-map-images-prod.s3.amazonaws.com/9892402a-bf19-44b8-8c66-1753b66327ef.webp",
+      "last_edited": "1761935232",
+      "verified": true
+    },
+    {
+      "id": "collectivefocusresourcehub",
+      "name": "Collective Focus Resource Hub",
+      "location": {
+        "street": "1046 Broadway",
+        "city": "New York",
+        "state": "NY",
+        "zip": "11221",
+        "geoLat": 40.695189,
+        "geoLng": -73.932345
+      },
+      "maintainer": {
+        "instagram": "https://www.instagram.com/collectivefocushub"
+      },
+      "last_edited": "1667513829",
+      "verified": false,
+      "latestFridgeReport": {
+        "fridgeId": "collectivefocusresourcehub",
+        "epochTimestamp": "1746981600",
+        "timestamp": "2026-05-09T12:00:00.000Z",
+        "condition": "dirty",
+        "foodPercentage": 3,
+        "notes": "Lots of preparred meals and bagels"
+      },
+      "photoUrl": "https://community-fridge-map-images-prod.s3.amazonaws.com/collective_focus_reg.webp"
+    },
+    {
+      "id": "GBLYop",
+      "name": "In Our Own Voices Fridge",
+      "location": {
+        "street": "245 Lark Street",
+        "city": "Albany",
+        "state": "NY",
+        "zip": "12210",
+        "geoLat": 42.65453292702118,
+        "geoLng": -73.76578349271105
+      },
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ioov245",
+        "website": "https://ioov.org/"
+      },
+      "notes": "Strengthening and empowering LGBTQIA+ BIPOC communities",
+      "photoUrl": "https://community-fridge-map-images-prod.s3.amazonaws.com/bc9f7e57-caec-4174-96ba-8b955892e81c.webp",
+      "last_edited": "1761969993",
+      "verified": true
+    },
+    {
+      "id": "copohalalcommunityfridge",
+      "name": "COPO Halal Community Fridge",
+      "location": {
+        "street": "1077 Coney Island Avenue",
+        "city": "New York",
+        "state": "NY",
+        "zip": "11230",
+        "geoLat": 40.6313315,
+        "geoLng": -73.96621703154759
+      },
+      "maintainer": {
+        "instagram": "https://www.instagram.com/copousa"
+      },
+      "photoUrl": "https://community-fridge-map-images-prod.s3.amazonaws.com/e2cf8333-7a02-458e-94b8-c4bae89bf691.webp",
+      "last_edited": "1667513821",
+      "verified": false
+    },
+    {
+      "id": "gDhkUw",
+      "name": "1Pulaski - Bed-Stuy",
+      "location": {
+        "street": "1 Pulaski St",
+        "city": "Brooklyn",
+        "state": "NY",
+        "zip": "11206",
+        "geoLat": 40.69234036135249,
+        "geoLng": -73.95144788611046
+      },
+      "maintainer": {
+        "instagram": "https://www.instagram.com/1pulaski/"
+      },
+      "notes": "Community fridge, library, and wifi!",
+      "photoUrl": "https://community-fridge-map-images-prod.s3.amazonaws.com/3d58a177-9cf7-4159-a134-ab00aa5ac48a.webp",
+      "last_edited": "1761927647",
+      "verified": true
+    },
+    {
+      "id": "cKErB1",
+      "name": "KWT Fridge",
+      "location": {
+        "street": "327 E 5th St",
+        "city": "Brooklyn",
+        "state": "NY",
+        "zip": "11218",
+        "geoLat": 40.64436084638691,
+        "geoLng": -73.97530234598224
+      },
+      "maintainer": {
+        "instagram": "https://www.instagram.com/kwtfridge/",
+        "website": "https://www.kwtmutualaid.com/get-involved/fridge"
+      },
+      "notes": "🍏 Fridge: Church Ave btwn Ocean Parkway & East 5th",
+      "photoUrl": "https://community-fridge-map-images-prod.s3.amazonaws.com/149d1240-69a3-4963-9d12-efc64bbcb46e.webp",
+      "last_edited": "1761958757",
+      "verified": true
+    },
+    {
+      "id": "Vt4Ilq",
+      "name": "Hope Community Fridge - East Ridge",
+      "location": {
+        "street": "720 S Germantown Rd",
+        "city": "East Ridge",
+        "state": "TN",
+        "zip": "37412",
+        "geoLat": 35.00992892392512,
+        "geoLng": -85.25336184285138
+      },
+      "maintainer": {
+        "instagram": "https://www.instagram.com/hopecommunityfridge",
+        "website": "https://linktr.ee/hopecommunityfridge"
+      },
+      "notes": "💪🥫Fighting food insecurity & waste🥬✨. We are a 🌈 Mutual Aid.",
+      "photoUrl": "https://community-fridge-map-images-prod.s3.amazonaws.com/9604c861-2bca-494b-8a8c-ba782052e38a.webp",
+      "last_edited": "1761931949",
+      "verified": true,
+      "latestFridgeReport": {
+        "fridgeId": "Vt4Ilq",
+        "epochTimestamp": "1762000000",
+        "timestamp": "2025-11-01T12:26:40Z",
+        "condition": "good",
+        "foodPercentage": 2,
+        "notes": "Stocked with canned goods and fresh produce."
+      }
+    },
+    {
+      "id": "vancouver_community_fridge",
+      "name": "Vancouver Community Fridge",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/vancouverfridge",
+        "website": "https://vancouverfridge.com/",
+        "email": "hello@vancouverfridge.com"
+      },
+      "location": {
+        "street": "531 Commercial Dr",
+        "city": "Vancouver",
+        "state": "BC",
+        "zip": "V5L 3W4",
+        "geoLat": 49.281861,
+        "geoLng": -123.069947
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "kitsilano_free_fridge",
+      "name": "Kitsilano Free Fridge",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/kitsfreefridge"
+      },
+      "location": {
+        "street": "2525 Macdonald St",
+        "city": "Vancouver",
+        "state": "BC",
+        "zip": "V6K 3Z9",
+        "geoLat": 49.2632,
+        "geoLng": -123.1611
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "mount_pleasant_fridge",
+      "name": "Mount Pleasant Pantry",
+      "verified": false,
+      "maintainer": {
+        "email": "mpfridge@example.com"
+      },
+      "location": {
+        "street": "301 E 11th Ave",
+        "city": "Vancouver",
+        "state": "BC",
+        "zip": "V5T 2C4",
+        "geoLat": 49.2616,
+        "geoLng": -123.0977
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "burnaby_metrotown",
+      "name": "Metrotown Community Fridge",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_burnaby_metrotown"
+      },
+      "location": {
+        "street": "4700 Kingsway",
+        "city": "Burnaby",
+        "state": "BC",
+        "zip": "V5H 4M1",
+        "geoLat": 49.2255,
+        "geoLng": -122.9984
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "burnaby_brentwood",
+      "name": "Brentwood Sharing Pantry",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_burnaby_brentwood"
+      },
+      "location": {
+        "street": "4567 Lougheed Hwy",
+        "city": "Burnaby",
+        "state": "BC",
+        "zip": "V5C 3Z6",
+        "geoLat": 49.2662,
+        "geoLng": -123.0013
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "burnaby_lougheed",
+      "name": "Lougheed Town Fridge",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_burnaby_lougheed"
+      },
+      "location": {
+        "street": "9855 Austin Ave",
+        "city": "Burnaby",
+        "state": "BC",
+        "zip": "V3J 1N4",
+        "geoLat": 49.252,
+        "geoLng": -122.8943
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "burnaby_hastings",
+      "name": "North Burnaby Fridge",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_burnaby_hastings"
+      },
+      "location": {
+        "street": "4000 Hastings St",
+        "city": "Burnaby",
+        "state": "BC",
+        "zip": "V5C 2H9",
+        "geoLat": 49.281,
+        "geoLng": -122.9818
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "burnaby_edmonds",
+      "name": "Edmonds Food Hub",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_burnaby_edmonds"
+      },
+      "location": {
+        "street": "7355 Canada Way",
+        "city": "Burnaby",
+        "state": "BC",
+        "zip": "V3N 4Z6",
+        "geoLat": 49.2173,
+        "geoLng": -122.9463
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "richmond_brighouse",
+      "name": "Brighouse Community Fridge",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_richmond_brighouse"
+      },
+      "location": {
+        "street": "6551 No 3 Rd",
+        "city": "Richmond",
+        "state": "BC",
+        "zip": "V6Y 2B6",
+        "geoLat": 49.1654,
+        "geoLng": -123.1366
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "richmond_steveston",
+      "name": "Steveston Village Fridge",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_richmond_steveston"
+      },
+      "location": {
+        "street": "3811 Moncton St",
+        "city": "Richmond",
+        "state": "BC",
+        "zip": "V7E 3A7",
+        "geoLat": 49.1264,
+        "geoLng": -123.1818
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "richmond_cambie",
+      "name": "East Richmond Pantry",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_richmond_cambie"
+      },
+      "location": {
+        "street": "4100 No 5 Rd",
+        "city": "Richmond",
+        "state": "BC",
+        "zip": "V6X 2T9",
+        "geoLat": 49.1824,
+        "geoLng": -123.0901
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "richmond_ironwood",
+      "name": "Ironwood Plaza Fridge",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_richmond_ironwood"
+      },
+      "location": {
+        "street": "11666 Steveston Hwy",
+        "city": "Richmond",
+        "state": "BC",
+        "zip": "V7A 5J3",
+        "geoLat": 49.1332,
+        "geoLng": -123.1005
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "vancouver_downtown",
+      "name": "Downtown Eastside Fridge",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_vancouver_downtown"
+      },
+      "location": {
+        "street": "111 W Hastings St",
+        "city": "Vancouver",
+        "state": "BC",
+        "zip": "V6B 1G4",
+        "geoLat": 49.282,
+        "geoLng": -123.0991
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "vancouver_ubc",
+      "name": "UBC AMS Food Bank Fridge",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_vancouver_ubc"
+      },
+      "location": {
+        "street": "6133 University Blvd",
+        "city": "Vancouver",
+        "state": "BC",
+        "zip": "V6T 1Z1",
+        "geoLat": 49.2663,
+        "geoLng": -123.2505
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "vancouver_south",
+      "name": "Sunset Community Fridge",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_vancouver_south"
+      },
+      "location": {
+        "street": "6810 Main St",
+        "city": "Vancouver",
+        "state": "BC",
+        "zip": "V5X 3T4",
+        "geoLat": 49.2195,
+        "geoLng": -123.0905
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "vancouver_westend",
+      "name": "West End Sharing Fridge",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_vancouver_westend"
+      },
+      "location": {
+        "street": "1055 Barclay St",
+        "city": "Vancouver",
+        "state": "BC",
+        "zip": "V6E 1G5",
+        "geoLat": 49.2845,
+        "geoLng": -123.1336
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    },
+    {
+      "id": "vancouver_kerrisdale",
+      "name": "Kerrisdale Community Pantry",
+      "verified": true,
+      "maintainer": {
+        "instagram": "https://www.instagram.com/ff_vancouver_kerrisdale"
+      },
+      "location": {
+        "street": "2100 W 41st Ave",
+        "city": "Vancouver",
+        "state": "BC",
+        "zip": "V6M 1Z8",
+        "geoLat": 49.2346,
+        "geoLng": -123.1554
+      },
+      "photoUrl": "/feedback/happyFridge.svg"
+    }
+  ],
+  "reports": [
+    {
+      "fridgeId": "barriofridge1",
+      "timestamp": "2022-11-10T08:35:17.902Z",
+      "condition": "dirty",
+      "foodPercentage": 1,
+      "photoUrl": "/card/paragraph/pearTomatoAndFridge.svg",
+      "notes": "Voluptatibus aut quaerat."
+    },
+    {
+      "fridgeId": "barriofridge2",
+      "timestamp": "2022-11-10T08:35:17.902Z",
+      "condition": "out of order",
+      "foodPercentage": 2,
+      "photoUrl": "/card/paragraph/pearTomatoAndFridge.svg",
+      "notes": "Voluptatibus aut quaerat."
+    },
+    {
+      "condition": "good",
+      "notes": "",
+      "foodPercentage": 3,
+      "timestamp": "2022-11-10T08:35:17.902Z",
+      "fridgeId": "collectivefocusresourcehub"
+    },
+    {
+      "condition": "dirty",
+      "notes": "Needs cleaning soon",
+      "foodPercentage": 3,
+      "timestamp": "2026-05-09T12:00:00.000Z",
+      "fridgeId": "collectivefocusresourcehub"
+    },
+    {
+      "condition": "good",
+      "notes": "",
+      "foodPercentage": 2,
+      "timestamp": "2022-11-10T08:35:17.902Z",
+      "fridgeId": "harlemcommunityfridge"
+    },
+    {
+      "id": "vancouver_community_fridge_report",
+      "fridgeId": "vancouver_community_fridge",
+      "timestamp": "2025-02-23T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Freshly stocked with veggies."
+    },
+    {
+      "id": "kitsilano_free_fridge_report",
+      "fridgeId": "kitsilano_free_fridge",
+      "timestamp": "2025-02-23T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Freshly stocked with veggies."
+    },
+    {
+      "id": "mount_pleasant_fridge_report",
+      "fridgeId": "mount_pleasant_fridge",
+      "timestamp": "2025-02-23T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Freshly stocked with veggies."
+    },
+    {
+      "id": "burnaby_metrotown_report",
+      "fridgeId": "burnaby_metrotown",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "burnaby_brentwood_report",
+      "fridgeId": "burnaby_brentwood",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "burnaby_lougheed_report",
+      "fridgeId": "burnaby_lougheed",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "burnaby_hastings_report",
+      "fridgeId": "burnaby_hastings",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "burnaby_edmonds_report",
+      "fridgeId": "burnaby_edmonds",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "richmond_brighouse_report",
+      "fridgeId": "richmond_brighouse",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "richmond_steveston_report",
+      "fridgeId": "richmond_steveston",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "richmond_cambie_report",
+      "fridgeId": "richmond_cambie",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "richmond_ironwood_report",
+      "fridgeId": "richmond_ironwood",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "vancouver_downtown_report",
+      "fridgeId": "vancouver_downtown",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "vancouver_ubc_report",
+      "fridgeId": "vancouver_ubc",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "vancouver_south_report",
+      "fridgeId": "vancouver_south",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "vancouver_westend_report",
+      "fridgeId": "vancouver_westend",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    },
+    {
+      "id": "vancouver_kerrisdale_report",
+      "fridgeId": "vancouver_kerrisdale",
+      "timestamp": "2026-03-16T12:00:00.000Z",
+      "condition": "good",
+      "foodPercentage": 2,
+      "notes": "Loaded with fresh supplies!"
+    }
+  ],
+  "contact": [],
+  "photo": [],
+  "fridge-notifications": [
+    {
+      "id": "i8ReAmQxN7OFIVbDTgDECvAPV6iA_barriofridge1",
+      "userId": "i8ReAmQxN7OFIVbDTgDECvAPV6iA",
+      "fridgeId": "barriofridge1",
+      "contactTypePreferences": {
+        "email": {
+          "dirty": true,
+          "outOfOrder": true,
+          "noFood": true,
+          "hasFood": false
+        },
+        "device": {
+          "dirty": false,
+          "outOfOrder": false,
+          "noFood": false,
+          "hasFood": false
+        }
+      }
+    },
+    {
+      "id": "i8ReAmQxN7OFIVbDTgDECvAPV6iA_barriofridge2",
+      "userId": "i8ReAmQxN7OFIVbDTgDECvAPV6iA",
+      "fridgeId": "barriofridge2",
+      "contactTypePreferences": {
+        "email": {
+          "dirty": false,
+          "outOfOrder": false,
+          "noFood": true,
+          "hasFood": true
+        },
+        "device": {
+          "dirty": true,
+          "outOfOrder": false,
+          "noFood": true,
+          "hasFood": false
+        }
+      }
+    },
+    {
+      "id": "i8ReAmQxN7OFIVbDTgDECvAPV6iA_harlemcommunityfridge",
+      "userId": "i8ReAmQxN7OFIVbDTgDECvAPV6iA",
+      "fridgeId": "harlemcommunityfridge",
+      "contactTypePreferences": {
+        "email": {
+          "dirty": true,
+          "outOfOrder": true,
+          "noFood": true,
+          "hasFood": true
+        },
+        "device": {
+          "dirty": true,
+          "outOfOrder": true,
+          "noFood": true,
+          "hasFood": true
+        }
+      }
+    },
+    {
+      "id": "i8ReAmQxN7OFIVbDTgDECvAPV6iA_collectivefocusresourcehub",
+      "userId": "i8ReAmQxN7OFIVbDTgDECvAPV6iA",
+      "fridgeId": "collectivefocusresourcehub",
+      "contactTypePreferences": {
+        "email": {
+          "dirty": false,
+          "outOfOrder": false,
+          "noFood": false,
+          "hasFood": true
+        },
+        "device": {
+          "dirty": false,
+          "outOfOrder": false,
+          "noFood": false,
+          "hasFood": true
+        }
+      }
+    },
+    {
+      "id": "i8ReAmQxN7OFIVbDTgDECvAPV6iA_vancouver_community_fridge",
+      "userId": "i8ReAmQxN7OFIVbDTgDECvAPV6iA",
+      "fridgeId": "vancouver_community_fridge",
+      "contactTypePreferences": {
+        "email": {
+          "dirty": true,
+          "outOfOrder": false,
+          "noFood": false,
+          "hasFood": false
+        },
+        "device": {
+          "dirty": false,
+          "outOfOrder": true,
+          "noFood": false,
+          "hasFood": false
+        }
+      }
+    },
+    {
+      "id": "i8ReAmQxN7OFIVbDTgDECvAPV6iA_kitsilano_free_fridge",
+      "userId": "i8ReAmQxN7OFIVbDTgDECvAPV6iA",
+      "fridgeId": "kitsilano_free_fridge",
+      "contactTypePreferences": {
+        "email": {
+          "dirty": false,
+          "outOfOrder": false,
+          "noFood": false,
+          "hasFood": false
+        },
+        "device": {
+          "dirty": false,
+          "outOfOrder": false,
+          "noFood": false,
+          "hasFood": false
+        }
+      }
+    }
+  ]
+}

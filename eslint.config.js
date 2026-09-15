@@ -2,13 +2,23 @@ import globals from 'globals';
 import pluginNext from '@next/eslint-plugin-next';
 import pluginReact from 'eslint-plugin-react';
 import pluginReactHooks from 'eslint-plugin-react-hooks';
-import babelParser from '@babel/eslint-parser';
+import tseslint from 'typescript-eslint';
 import js from '@eslint/js';
 
-export default [
-  js.configs.recommended,
+export default tseslint.config(
   {
-    files: ['src/**/*.{js,jsx}'],
+    ignores: [
+      '.next/**',
+      'build/**',
+      'out/**',
+      'node_modules/**',
+      'tsconfig.tsbuildinfo',
+    ],
+  },
+  js.configs.recommended,
+  ...tseslint.configs.recommended,
+  {
+    files: ['src/**/*.{ts,tsx}'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
@@ -17,15 +27,6 @@ export default [
         ...globals.node,
         ...globals.jest,
         React: true,
-        L: 'readonly', // for leaflet@1.8
-      },
-      parser: babelParser, // for JSX parsing
-      parserOptions: {
-        requireConfigFile: false, // skip check for babel.config.js
-        babelOptions: {
-          plugins: ['@babel/plugin-syntax-jsx'],
-        },
-        ecmaFeatures: { jsx: true },
       },
     },
     plugins: {
@@ -39,42 +40,34 @@ export default [
       ...pluginReact.configs['jsx-runtime'].rules,
       ...pluginReact.configs['recommended'].rules,
       ...pluginReactHooks.configs['recommended'].rules,
-      'no-restricted-imports': [
-        'error',
-        {
-          paths: [
-            {
-              name: '@emotion/styled',
-              message: 'Please use MUI/System instead.',
-            },
-            {
-              name: '@mui/material/styles',
-              importNames: ['styled'],
-              message: 'Please use MUI/System instead.',
-            },
-          ],
-
-          patterns: ['@mui/*/*/*', '!@mui/material/test-utils/*'],
-        },
-      ],
-      'react/prop-types': 'error',
       'react/react-in-jsx-scope': 'off',
+      '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        { argsIgnorePattern: '^_' },
+      ],
+      'react/no-unescaped-entities': 'warn',
+      '@next/next/no-img-element': 'warn',
+      'react-hooks/exhaustive-deps': 'warn',
     },
     settings: {
       react: {
-        version: '19.1.1',
+        version: 'detect',
       },
     },
   },
   {
-    files: ['{etl,ci}/**/*.mjs'],
+    files: ['{scripts,etl,ci}/**/*.mjs', '*.js'],
     languageOptions: {
       ecmaVersion: 'latest',
       sourceType: 'module',
       globals: {
         ...globals.node,
         ...globals.jest,
+        ...globals.browser,
+        console: true,
+        process: true,
       },
     },
-  },
-];
+  }
+);
