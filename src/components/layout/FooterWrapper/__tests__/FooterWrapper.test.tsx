@@ -15,6 +15,7 @@ const mockUsePathname = usePathname as jest.Mock;
 
 describe('FooterWrapper', () => {
   it.each([
+    ['/admin'],
     ['/browse'],
     ['/auth/login'],
     ['/auth/callback'],

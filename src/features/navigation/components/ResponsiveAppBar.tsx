@@ -19,6 +19,7 @@ import {
   Typography,
 } from '@mui/material';
 import {
+  AdminPanelSettingsOutlined as AdminPanelSettingsIcon,
   Menu as MenuIcon,
   Close as CloseIcon,
   ChevronRight as ChevronRightIcon,
@@ -137,6 +138,12 @@ const sxDesktopIcon: { sx: SvgIconProps['sx'] } = {
 const sxMobileIcon: { sx: SvgIconProps['sx'] } = {
   sx: { width: '44px', height: '44px' },
 };
+const sxAdminDesktopIcon: { sx: SvgIconProps['sx'] } = {
+  sx: { width: '32px', height: '32px' },
+};
+const sxAdminMobileIcon: { sx: SvgIconProps['sx'] } = {
+  sx: { width: '34px', height: '34px' },
+};
 
 interface NavDesktopItemProps {
   icon?: React.ComponentType<SvgIconProps>;
@@ -206,10 +213,12 @@ function NavDesktopItem({
 
 interface MenuDesktopProps {
   isAuthenticated: boolean;
+  isAdmin: boolean;
 }
 
 function MenuDesktop({
   isAuthenticated,
+  isAdmin,
 }: MenuDesktopProps): React.ReactElement {
   const pathname = usePathname();
   return (
@@ -237,6 +246,20 @@ function MenuDesktop({
       )}
       {isAuthenticated ? (
         <>
+          {isAdmin && (
+            <NavDesktopItem
+              iconNode={
+                <Box
+                  sx={{ ...iconCircleBaseSx, width: '42px', height: '42px' }}
+                >
+                  <AdminPanelSettingsIcon {...sxAdminDesktopIcon} />
+                </Box>
+              }
+              title="Admin"
+              link="/admin"
+              isActive={pathname === '/admin'}
+            />
+          )}
           <NavDesktopItem
             icon={MyFridgesIcon}
             title="My Fridges"
@@ -330,11 +353,13 @@ function MobileMenuRow({
 interface MenuMobileProps {
   onItemClick: () => void;
   isAuthenticated: boolean;
+  isAdmin: boolean;
 }
 
 function MenuMobile({
   onItemClick,
   isAuthenticated,
+  isAdmin,
 }: MenuMobileProps): React.ReactElement {
   const pathname = usePathname();
   return (
@@ -384,6 +409,21 @@ function MenuMobile({
           >
             My Account
           </Typography>
+          {isAdmin && (
+            <MobileMenuRow
+              label="Admin"
+              link="/admin"
+              isActive={pathname === '/admin'}
+              icon={
+                <Box
+                  sx={{ ...iconCircleBaseSx, width: '48px', height: '48px' }}
+                >
+                  <AdminPanelSettingsIcon {...sxAdminMobileIcon} />
+                </Box>
+              }
+              onClick={onItemClick}
+            />
+          )}
           <MobileMenuRow
             label="My Fridges"
             link="/my-fridges"
@@ -424,7 +464,7 @@ function MenuMobile({
 
 export function ResponsiveAppBar(): React.ReactElement {
   const [mobileOpen, setMobileOpen] = useState(false);
-  const { status } = useAuthStore();
+  const { status, isAdmin } = useAuthStore();
   const isAuthenticated = status === 'authenticated';
 
   const handleMobileMenuToggle = useCallback(() => {
@@ -481,7 +521,7 @@ export function ResponsiveAppBar(): React.ReactElement {
             justifyContent: 'flex-end',
           }}
         >
-          <MenuDesktop isAuthenticated={isAuthenticated} />
+          <MenuDesktop isAuthenticated={isAuthenticated} isAdmin={isAdmin} />
         </Box>
 
         <Box
@@ -537,6 +577,7 @@ export function ResponsiveAppBar(): React.ReactElement {
             <MenuMobile
               onItemClick={handleMobileItemClick}
               isAuthenticated={isAuthenticated}
+              isAdmin={isAdmin}
             />
           </Drawer>
         </Box>

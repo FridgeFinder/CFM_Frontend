@@ -1,4 +1,5 @@
 import type { User } from 'firebase/auth';
+import { getIdTokenResult, onAuthStateChanged } from 'firebase/auth';
 
 const TEST_USERS_API_URL = 'https://users-api-fake.test.com';
 process.env.NEXT_PUBLIC_USERS_API_URL = TEST_USERS_API_URL;
@@ -8,12 +9,14 @@ jest.mock('config/firebase', () => ({
 }));
 
 jest.mock('firebase/auth', () => ({
+  getIdTokenResult: jest.fn(),
   onAuthStateChanged: jest.fn(),
 }));
 
 let useAuthStore: typeof import('../useAuthStore').useAuthStore;
 let clearUserProfileCache: typeof import('../useAuthStore').clearUserProfileCache;
 let updateCachedUserProfile: typeof import('../useAuthStore').updateCachedUserProfile;
+let initAuthListener: typeof import('../useAuthStore').initAuthListener;
 
 const mockUser = {
   uid: 'user-123',
@@ -31,8 +34,12 @@ const profileResponse = {
 
 describe('useAuthStore profile cache', () => {
   beforeAll(async () => {
-    ({ useAuthStore, clearUserProfileCache, updateCachedUserProfile } =
-      await import('../useAuthStore'));
+    ({
+      useAuthStore,
+      clearUserProfileCache,
+      updateCachedUserProfile,
+      initAuthListener,
+    } = await import('../useAuthStore'));
   });
 
   beforeEach(() => {
@@ -40,6 +47,8 @@ describe('useAuthStore profile cache', () => {
     useAuthStore.setState({
       user: mockUser,
       status: 'authenticated',
+      isAdmin: false,
+      customClaimsStatus: 'idle',
       userProfile: null,
       userProfileStatus: 'idle',
     });
@@ -87,5 +96,35 @@ describe('useAuthStore profile cache', () => {
 
     expect(global.fetch).toHaveBeenCalledTimes(1);
     expect(useAuthStore.getState().userProfile?.userType).toBe('Volunteer');
+  });
+
+  it('loads and resets the admin custom claim from auth changes', async () => {
+    const authStateChanged = onAuthStateChanged as jest.Mock;
+    const getTokenResult = getIdTokenResult as jest.Mock;
+    let handleAuthChange: ((user: User | null) => void) | undefined;
+
+    authStateChanged.mockImplementation(
+      (_auth: unknown, callback: (user: User | null) => void) => {
+        handleAuthChange = callback;
+        return jest.fn();
+      }
+    );
+    getTokenResult.mockResolvedValue({ claims: { admin: true } });
+
+    initAuthListener();
+    handleAuthChange?.(mockUser);
+
+    expect(useAuthStore.getState().customClaimsStatus).toBe('loading');
+
+    await Promise.resolve();
+
+    expect(getTokenResult).toHaveBeenCalledWith(mockUser);
+    expect(useAuthStore.getState().isAdmin).toBe(true);
+    expect(useAuthStore.getState().customClaimsStatus).toBe('success');
+
+    handleAuthChange?.(null);
+
+    expect(useAuthStore.getState().isAdmin).toBe(false);
+    expect(useAuthStore.getState().customClaimsStatus).toBe('idle');
   });
 });
