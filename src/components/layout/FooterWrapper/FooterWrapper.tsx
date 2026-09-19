@@ -15,7 +15,8 @@ export function FooterWrapper(): React.ReactElement | null {
     pathname.startsWith('/auth') ||
     pathname.startsWith('/fridge/') ||
     pathname.endsWith('/notifications') ||
-    pathname.endsWith('/profile')
+    pathname.endsWith('/profile') ||
+    pathname.startsWith('/admin')
   ) {
     return null;
   }
