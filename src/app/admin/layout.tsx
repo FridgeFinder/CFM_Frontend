@@ -11,7 +11,10 @@ import {
   Tab,
   Tabs,
 } from '@mui/material';
-import { AddLocationAltOutlined as AddLocationAltOutlinedIcon } from '@mui/icons-material';
+import {
+  AddLocationAltOutlined as AddLocationAltOutlinedIcon,
+  ContactPageOutlined as ContactPageOutlinedIcon,
+} from '@mui/icons-material';
 import { usePathname, useRouter } from 'next/navigation';
 import { NextLink } from 'components/ui';
 import { useAuthStore } from 'store/useAuthStore';
@@ -22,6 +25,11 @@ const adminDashboardOptions = [
     label: 'Add Fridge',
     href: '/admin/add-fridge',
     icon: AddLocationAltOutlinedIcon,
+  },
+  {
+    label: 'Contact Log',
+    href: '/admin/contact-log',
+    icon: ContactPageOutlinedIcon,
   },
 ];
 

@@ -1,5 +1,6 @@
 import { initializeApp, getApps } from 'firebase/app';
 import { getAuth, connectAuthEmulator, Auth } from 'firebase/auth';
+import { getFirestore, Firestore } from 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY!,
@@ -11,11 +12,14 @@ const firebaseConfig = {
 };
 
 let auth: Auth | undefined;
+let firestore: Firestore | undefined;
 let isAuthEmulatorConnected = false;
 
+const getFirebaseApp = () =>
+  getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+
 export const getFirebaseAuth = (): Auth => {
-  const app =
-    getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+  const app = getFirebaseApp();
   auth ??= getAuth(app);
 
   if (
@@ -30,4 +34,10 @@ export const getFirebaseAuth = (): Auth => {
   }
 
   return auth;
+};
+
+export const getFirebaseFirestore = (): Firestore => {
+  firestore ??= getFirestore(getFirebaseApp());
+
+  return firestore;
 };
