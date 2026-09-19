@@ -18,14 +18,8 @@ import { z } from 'zod';
 import { useAuthStore } from 'store/useAuthStore';
 import { designColor } from 'theme/palette';
 
-const FRIDGES_API_URL = `${
-  process.env.NEXT_PUBLIC_FF_API_URL ??
-  'https://api-dev.communityfridgefinder.com'
-}/v1/fridges/`;
-const PHOTO_API_URL = `${
-  process.env.NEXT_PUBLIC_FF_API_URL ??
-  'https://api-dev.communityfridgefinder.com'
-}/v1/photo`;
+const FRIDGES_API_URL = '/v1/fridges/';
+const PHOTO_API_URL = '/v1/photo';
 
 const optionalUrlSchema = z
   .string()
