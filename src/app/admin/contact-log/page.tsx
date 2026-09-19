@@ -42,6 +42,7 @@ import { designColor } from 'theme/palette';
 
 const CONTACT_LOG_COLLECTION = 'contactLog';
 const FRIDGES_API_URL = '/v1/fridges/';
+const FIRESTORE_WRITE_TIMEOUT_MS = 15000;
 
 const contactStatuses = [
   { value: 'not_contacted', label: 'Not contacted', color: 'default' },
@@ -94,6 +95,7 @@ type ContactLogRow = {
   contacted: boolean;
   notes: string;
   updatedAt?: Timestamp;
+  hasPendingWrites: boolean;
 };
 
 const statusLabels = contactStatuses.reduce<Record<ContactStatus, string>>(
@@ -117,12 +119,43 @@ function getAddress(location: FridgeLocation): string {
     .join(', ');
 }
 
+function sanitizeLocation(location?: FridgeLocation): FridgeLocation {
+  return {
+    ...(typeof location?.street === 'string'
+      ? { street: location.street }
+      : {}),
+    ...(typeof location?.city === 'string' ? { city: location.city } : {}),
+    ...(typeof location?.state === 'string' ? { state: location.state } : {}),
+    ...(typeof location?.zip === 'string' ? { zip: location.zip } : {}),
+    ...(typeof location?.geoLat === 'number'
+      ? { geoLat: location.geoLat }
+      : {}),
+    ...(typeof location?.geoLng === 'number'
+      ? { geoLng: location.geoLng }
+      : {}),
+  };
+}
+
+function sanitizeMaintainer(maintainer?: FridgeMaintainer): FridgeMaintainer {
+  return {
+    ...(typeof maintainer?.email === 'string'
+      ? { email: maintainer.email }
+      : {}),
+    ...(typeof maintainer?.instagram === 'string'
+      ? { instagram: maintainer.instagram }
+      : {}),
+    ...(typeof maintainer?.website === 'string'
+      ? { website: maintainer.website }
+      : {}),
+  };
+}
+
 function buildContactLogRow(fridge: ApiFridge, exists: boolean) {
   return {
     fridgeId: fridge.id,
     name: fridge.name,
-    location: fridge.location ?? {},
-    maintainer: fridge.maintainer ?? {},
+    location: sanitizeLocation(fridge.location),
+    maintainer: sanitizeMaintainer(fridge.maintainer),
     ...(exists
       ? {}
       : {
@@ -139,10 +172,33 @@ function getStatusChipColor(status: ContactStatus) {
   return contactStatuses.find((option) => option.value === status)?.color;
 }
 
+function getErrorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : 'Unknown error';
+}
+
+function withTimeout<T>(promise: Promise<T>, message: string): Promise<T> {
+  return new Promise((resolve, reject) => {
+    const timeoutId = globalThis.setTimeout(() => {
+      reject(new Error(message));
+    }, FIRESTORE_WRITE_TIMEOUT_MS);
+
+    promise
+      .then((value) => {
+        globalThis.clearTimeout(timeoutId);
+        resolve(value);
+      })
+      .catch((error: unknown) => {
+        globalThis.clearTimeout(timeoutId);
+        reject(error);
+      });
+  });
+}
+
 export default function ContactLogPage(): React.ReactElement {
   const [rows, setRows] = useState<ContactLogRow[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isImporting, setIsImporting] = useState(false);
+  const [hasPendingWrites, setHasPendingWrites] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [savingRowIds, setSavingRowIds] = useState<Set<string>>(new Set());
@@ -157,7 +213,9 @@ export default function ContactLogPage(): React.ReactElement {
 
     return onSnapshot(
       contactLogQuery,
+      { includeMetadataChanges: true },
       (snapshot) => {
+        setHasPendingWrites(snapshot.metadata.hasPendingWrites);
         setRows(
           snapshot.docs.map((contactLogDoc) => {
             const data = contactLogDoc.data();
@@ -179,6 +237,7 @@ export default function ContactLogPage(): React.ReactElement {
               contacted: Boolean(data.contacted),
               notes: typeof data.notes === 'string' ? data.notes : '',
               updatedAt: data.updatedAt,
+              hasPendingWrites: contactLogDoc.metadata.hasPendingWrites,
             };
           })
         );
@@ -186,7 +245,9 @@ export default function ContactLogPage(): React.ReactElement {
       },
       (error) => {
         console.error('Failed to load contact log:', error);
-        setErrorMessage('Could not load the contact log from Firestore.');
+        setErrorMessage(
+          `Could not load the contact log from Firestore: ${getErrorMessage(error)}`
+        );
         setIsLoading(false);
       }
     );
@@ -208,7 +269,9 @@ export default function ContactLogPage(): React.ReactElement {
 
       const fridges = (await response.json()) as ApiFridge[];
       const importableFridges = fridges.filter(shouldImportFridge);
-      const existingIds = new Set(rows.map((row) => row.fridgeId));
+      const existingIds = new Set(
+        rows.filter((row) => !row.hasPendingWrites).map((row) => row.fridgeId)
+      );
       const batches = [];
 
       for (let index = 0; index < importableFridges.length; index += 450) {
@@ -226,13 +289,18 @@ export default function ContactLogPage(): React.ReactElement {
         batches.push(batch.commit());
       }
 
-      await Promise.all(batches);
+      await withTimeout(
+        Promise.all(batches),
+        'Firestore did not confirm the import. Check Firestore rules, project configuration, and network access.'
+      );
       setSuccessMessage(
         `Imported ${importableFridges.length} fridges into the contact log.`
       );
     } catch (error) {
       console.error('Failed to import fridges:', error);
-      setErrorMessage('Could not import fridges into the contact log.');
+      setErrorMessage(
+        `Could not import fridges into the contact log: ${getErrorMessage(error)}`
+      );
     } finally {
       setIsImporting(false);
     }
@@ -242,13 +310,18 @@ export default function ContactLogPage(): React.ReactElement {
     setSavingRowIds((currentIds) => new Set(currentIds).add(rowId));
 
     try {
-      await updateDoc(doc(db, CONTACT_LOG_COLLECTION, rowId), {
-        ...updates,
-        updatedAt: serverTimestamp(),
-      });
+      await withTimeout(
+        updateDoc(doc(db, CONTACT_LOG_COLLECTION, rowId), {
+          ...updates,
+          updatedAt: serverTimestamp(),
+        }),
+        'Firestore did not confirm the update. Check Firestore rules, project configuration, and network access.'
+      );
     } catch (error) {
       console.error('Failed to save contact log row:', error);
-      setErrorMessage('Could not save the contact log update.');
+      setErrorMessage(
+        `Could not save the contact log update: ${getErrorMessage(error)}`
+      );
     } finally {
       setSavingRowIds((currentIds) => {
         const nextIds = new Set(currentIds);
@@ -321,6 +394,13 @@ export default function ContactLogPage(): React.ReactElement {
           name, location, and maintainer fields without overwriting outreach
           status or notes.
         </Alert>
+
+        {hasPendingWrites ? (
+          <Alert severity="warning">
+            Some contact log changes are still pending in Firestore. They are
+            visible locally, but they are not confirmed as persisted yet.
+          </Alert>
+        ) : null}
 
         <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2}>
           <Paper variant="outlined" sx={{ p: 2, flex: 1 }}>
