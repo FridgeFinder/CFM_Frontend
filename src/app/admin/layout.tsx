@@ -14,6 +14,7 @@ import {
 import {
   AddLocationAltOutlined as AddLocationAltOutlinedIcon,
   ContactPageOutlined as ContactPageOutlinedIcon,
+  KitchenOutlined as KitchenOutlinedIcon,
 } from '@mui/icons-material';
 import { usePathname, useRouter } from 'next/navigation';
 import { NextLink } from 'components/ui';
@@ -30,6 +31,11 @@ const adminDashboardOptions = [
     label: 'Contact Log',
     href: '/admin/contact-log',
     icon: ContactPageOutlinedIcon,
+  },
+  {
+    label: 'Freedge',
+    href: '/admin/freedge',
+    icon: KitchenOutlinedIcon,
   },
 ];
 

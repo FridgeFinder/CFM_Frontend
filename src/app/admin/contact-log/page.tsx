@@ -21,6 +21,7 @@ import {
   TableCell,
   TableContainer,
   TableHead,
+  TablePagination,
   TableRow,
   TextField,
   Typography,
@@ -43,6 +44,10 @@ import { designColor } from 'theme/palette';
 const CONTACT_LOG_COLLECTION = 'contactLog';
 const FRIDGES_API_URL = '/v1/fridges/';
 const FIRESTORE_WRITE_TIMEOUT_MS = 15000;
+const IMPORT_BATCH_SIZE = 450;
+// Each batch's docs are validated against Firestore rules individually, so
+// commit time grows with batch count; scale the timeout instead of a flat cap.
+const getImportTimeoutMs = (batchCount: number) => 20000 + batchCount * 20000;
 
 const contactStatuses = [
   { value: 'not_contacted', label: 'Not contacted', color: 'default' },
@@ -176,11 +181,15 @@ function getErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : 'Unknown error';
 }
 
-function withTimeout<T>(promise: Promise<T>, message: string): Promise<T> {
+function withTimeout<T>(
+  promise: Promise<T>,
+  message: string,
+  timeoutMs: number = FIRESTORE_WRITE_TIMEOUT_MS
+): Promise<T> {
   return new Promise((resolve, reject) => {
     const timeoutId = globalThis.setTimeout(() => {
       reject(new Error(message));
-    }, FIRESTORE_WRITE_TIMEOUT_MS);
+    }, timeoutMs);
 
     promise
       .then((value) => {
@@ -202,6 +211,8 @@ export default function ContactLogPage(): React.ReactElement {
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [savingRowIds, setSavingRowIds] = useState<Set<string>>(new Set());
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(25);
 
   const db = useMemo(() => getFirebaseFirestore(), []);
 
@@ -253,6 +264,14 @@ export default function ContactLogPage(): React.ReactElement {
     );
   }, [db]);
 
+  const [prevRowsLength, setPrevRowsLength] = useState(rows.length);
+  if (rows.length !== prevRowsLength) {
+    setPrevRowsLength(rows.length);
+    if (page > 0 && page * rowsPerPage >= rows.length) {
+      setPage(0);
+    }
+  }
+
   async function handleImportFridges(): Promise<void> {
     setIsImporting(true);
     setErrorMessage('');
@@ -272,29 +291,54 @@ export default function ContactLogPage(): React.ReactElement {
       const existingIds = new Set(
         rows.filter((row) => !row.hasPendingWrites).map((row) => row.fridgeId)
       );
-      const batches = [];
+      const chunks: ApiFridge[][] = [];
 
-      for (let index = 0; index < importableFridges.length; index += 450) {
-        const batch = writeBatch(db);
-        const chunk = importableFridges.slice(index, index + 450);
-
-        chunk.forEach((fridge) => {
-          batch.set(
-            doc(db, CONTACT_LOG_COLLECTION, fridge.id),
-            buildContactLogRow(fridge, existingIds.has(fridge.id)),
-            { merge: true }
-          );
-        });
-
-        batches.push(batch.commit());
+      for (
+        let index = 0;
+        index < importableFridges.length;
+        index += IMPORT_BATCH_SIZE
+      ) {
+        chunks.push(importableFridges.slice(index, index + IMPORT_BATCH_SIZE));
       }
 
-      await withTimeout(
-        Promise.all(batches),
-        'Firestore did not confirm the import. Check Firestore rules, project configuration, and network access.'
+      const settledResults = await withTimeout(
+        Promise.allSettled(
+          chunks.map((chunk) => {
+            const batch = writeBatch(db);
+
+            chunk.forEach((fridge) => {
+              batch.set(
+                doc(db, CONTACT_LOG_COLLECTION, fridge.id),
+                buildContactLogRow(fridge, existingIds.has(fridge.id)),
+                { merge: true }
+              );
+            });
+
+            return batch.commit();
+          })
+        ),
+        `Firestore did not confirm the import within ${getImportTimeoutMs(chunks.length) / 1000}s. Check Firestore rules, project configuration, and network access.`,
+        getImportTimeoutMs(chunks.length)
       );
+
+      const failedChunks = settledResults.filter(
+        (result): result is PromiseRejectedResult =>
+          result.status === 'rejected'
+      );
+      const importedCount = settledResults.reduce(
+        (total, result, index) =>
+          result.status === 'fulfilled' ? total + chunks[index].length : total,
+        0
+      );
+
+      if (failedChunks.length > 0) {
+        throw new Error(
+          `Imported ${importedCount} of ${importableFridges.length} fridges, but ${failedChunks.length} batch(es) failed: ${getErrorMessage(failedChunks[0].reason)}`
+        );
+      }
+
       setSuccessMessage(
-        `Imported ${importableFridges.length} fridges into the contact log.`
+        `Imported ${importedCount} fridges into the contact log.`
       );
     } catch (error) {
       console.error('Failed to import fridges:', error);
@@ -357,6 +401,10 @@ export default function ContactLogPage(): React.ReactElement {
   const finalizedCount = rows.filter(
     (row) => row.status === 'finalized'
   ).length;
+  const visibleRows = rows.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   return (
     <Box sx={{ px: { xs: 2, md: 4 }, py: { xs: 3, md: 4 } }}>
@@ -455,7 +503,7 @@ export default function ContactLogPage(): React.ReactElement {
                   </TableCell>
                 </TableRow>
               ) : (
-                rows.map((row) => {
+                visibleRows.map((row) => {
                   const isSaving = savingRowIds.has(row.id);
 
                   return (
@@ -575,6 +623,18 @@ export default function ContactLogPage(): React.ReactElement {
               )}
             </TableBody>
           </Table>
+          <TablePagination
+            component="div"
+            count={rows.length}
+            page={page}
+            onPageChange={(_, nextPage) => setPage(nextPage)}
+            rowsPerPage={rowsPerPage}
+            onRowsPerPageChange={(event) => {
+              setRowsPerPage(Number(event.target.value));
+              setPage(0);
+            }}
+            rowsPerPageOptions={[10, 25, 50, 100]}
+          />
         </TableContainer>
       </Stack>
 
