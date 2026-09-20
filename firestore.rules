@@ -1,0 +1,257 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: contactLog
+    // Document ID: Fridge API id, for example FNYwy7
+    // Fields:
+    //   - fridgeId: string, required, immutable identifier matching document ID
+    //   - name: string, required, fridge display name
+    //   - location: map, required, optional street/city/state/zip/geoLat/geoLng
+    //   - maintainer: map, required, optional email/instagram/website
+    //   - status: string, required enum for outreach state
+    //   - contacted: bool, required, derived from status
+    //   - notes: string, required, admin-only outreach notes
+    //   - createdAt: timestamp, required, immutable
+    //   - updatedAt: timestamp, required
+    //   - contactedAt: timestamp, optional
+    //
+    // ===============================================================
+    // Helper Functions
+    // ===============================================================
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    function hasOnlyAllowedFields(data, fields) {
+      return data.keys().hasOnly(fields);
+    }
+
+    function validOptionalString(data, field, maxLength) {
+      return !(field in data) ||
+        (data[field] is string && data[field].size() <= maxLength);
+    }
+
+    function validOptionalNumber(data, field, minValue, maxValue) {
+      return !(field in data) ||
+        (data[field] is number && data[field] >= minValue && data[field] <= maxValue);
+    }
+
+    function validOptionalTimestamp(data, field) {
+      return !(field in data) || data[field] is timestamp;
+    }
+
+    function isValidLocation(location) {
+      return location is map &&
+        hasOnlyAllowedFields(location, ['street', 'city', 'state', 'zip', 'geoLat', 'geoLng']) &&
+        validOptionalString(location, 'street', 200) &&
+        validOptionalString(location, 'city', 100) &&
+        validOptionalString(location, 'state', 50) &&
+        validOptionalString(location, 'zip', 20) &&
+        validOptionalNumber(location, 'geoLat', -90, 90) &&
+        validOptionalNumber(location, 'geoLng', -180, 180);
+    }
+
+    function isValidMaintainer(maintainer) {
+      return maintainer is map &&
+        hasOnlyAllowedFields(maintainer, ['email', 'instagram', 'website']) &&
+        validOptionalString(maintainer, 'email', 254) &&
+        validOptionalString(maintainer, 'instagram', 500) &&
+        validOptionalString(maintainer, 'website', 500);
+    }
+
+    function isValidStatus(status) {
+      return status in [
+        'not_contacted',
+        'contacted',
+        'waiting_response',
+        'follow_up_needed',
+        'finalized',
+        'not_reachable'
+      ];
+    }
+
+    function isValidContactedState(data) {
+      return (data.status == 'not_contacted' && data.contacted == false) ||
+        (data.status != 'not_contacted' && data.contacted == true);
+    }
+
+    function isValidContactLog(data, fridgeId) {
+      return hasOnlyAllowedFields(data, [
+          'fridgeId',
+          'name',
+          'location',
+          'maintainer',
+          'status',
+          'contacted',
+          'notes',
+          'createdAt',
+          'updatedAt',
+          'contactedAt'
+        ]) &&
+        data.keys().hasAll([
+          'fridgeId',
+          'name',
+          'location',
+          'maintainer',
+          'status',
+          'contacted',
+          'notes',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.fridgeId == fridgeId &&
+        data.fridgeId is string && data.fridgeId.size() > 0 && data.fridgeId.size() <= 80 &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 200 &&
+        isValidLocation(data.location) &&
+        isValidMaintainer(data.maintainer) &&
+        isValidStatus(data.status) &&
+        data.contacted is bool &&
+        isValidContactedState(data) &&
+        data.notes is string && data.notes.size() <= 5000 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp &&
+        data.updatedAt == request.time &&
+        validOptionalTimestamp(data, 'contactedAt');
+    }
+
+    match /contactLog/{fridgeId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() &&
+        isValidContactLog(request.resource.data, fridgeId) &&
+        request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() &&
+        isValidContactLog(request.resource.data, fridgeId) &&
+        request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
+    }
+
+    // ===============================================================
+    // Assumed Data Model
+    // ===============================================================
+    //
+    // Collection: freedgeLog
+    // Document ID: slug derived from name/street/city, for example
+    //   les-frigos-solidaires-19-rue-houdon-paris
+    // Fields:
+    //   - freedgeId: string, required, immutable identifier matching document ID
+    //   - name: string, required, fridge display name
+    //   - network: string, optional
+    //   - location: map, required, optional street/city/state/zip/country/geoLat/geoLng
+    //   - contact: string, optional, freeform contact info from source data
+    //   - operatingHours: string, optional
+    //   - details: string, optional
+    //   - photoUrl: string, optional
+    //   - localMap: string, optional
+    //   - active: string, optional
+    //   - fridgefinderId: string, optional, links to the matching /fridge/{id} on this site
+    //   - email: string, optional, admin-only organizer contact info
+    //   - phoneNumber: string, optional, admin-only organizer contact info
+    //   - instagram: string, optional, admin-only organizer contact info
+    //   - facebook: string, optional, admin-only organizer contact info
+    //   - website: string, optional, admin-only organizer contact info
+    //   - status: string, required enum for outreach state
+    //   - contacted: bool, required, derived from status
+    //   - notes: string, required, admin-only outreach notes
+    //   - createdAt: timestamp, required, immutable
+    //   - updatedAt: timestamp, required
+    //   - contactedAt: timestamp, optional
+    //
+    // ===============================================================
+
+    function isValidFreedgeLocation(location) {
+      return location is map &&
+        hasOnlyAllowedFields(location, ['street', 'city', 'state', 'zip', 'country', 'geoLat', 'geoLng']) &&
+        validOptionalString(location, 'street', 300) &&
+        validOptionalString(location, 'city', 150) &&
+        validOptionalString(location, 'state', 150) &&
+        validOptionalString(location, 'zip', 30) &&
+        validOptionalString(location, 'country', 100) &&
+        validOptionalNumber(location, 'geoLat', -90, 90) &&
+        validOptionalNumber(location, 'geoLng', -180, 180);
+    }
+
+    function isValidFreedgeLog(data, freedgeId) {
+      return hasOnlyAllowedFields(data, [
+          'freedgeId',
+          'name',
+          'network',
+          'location',
+          'contact',
+          'operatingHours',
+          'details',
+          'photoUrl',
+          'localMap',
+          'active',
+          'fridgefinderId',
+          'email',
+          'phoneNumber',
+          'instagram',
+          'facebook',
+          'website',
+          'status',
+          'contacted',
+          'notes',
+          'createdAt',
+          'updatedAt',
+          'contactedAt'
+        ]) &&
+        data.keys().hasAll([
+          'freedgeId',
+          'name',
+          'location',
+          'status',
+          'contacted',
+          'notes',
+          'createdAt',
+          'updatedAt'
+        ]) &&
+        data.freedgeId == freedgeId &&
+        data.freedgeId is string && data.freedgeId.size() > 0 && data.freedgeId.size() <= 200 &&
+        data.name is string && data.name.size() > 0 && data.name.size() <= 300 &&
+        validOptionalString(data, 'network', 300) &&
+        isValidFreedgeLocation(data.location) &&
+        validOptionalString(data, 'contact', 1000) &&
+        validOptionalString(data, 'operatingHours', 500) &&
+        validOptionalString(data, 'details', 4000) &&
+        validOptionalString(data, 'photoUrl', 1000) &&
+        validOptionalString(data, 'localMap', 1500) &&
+        validOptionalString(data, 'active', 20) &&
+        validOptionalString(data, 'fridgefinderId', 80) &&
+        validOptionalString(data, 'email', 254) &&
+        validOptionalString(data, 'phoneNumber', 30) &&
+        validOptionalString(data, 'instagram', 500) &&
+        validOptionalString(data, 'facebook', 500) &&
+        validOptionalString(data, 'website', 500) &&
+        isValidStatus(data.status) &&
+        data.contacted is bool &&
+        isValidContactedState(data) &&
+        data.notes is string && data.notes.size() <= 5000 &&
+        data.createdAt is timestamp &&
+        data.updatedAt is timestamp &&
+        data.updatedAt == request.time &&
+        validOptionalTimestamp(data, 'contactedAt');
+    }
+
+    match /freedgeLog/{freedgeId} {
+      allow read: if isAdmin();
+      allow create: if isAdmin() &&
+        isValidFreedgeLog(request.resource.data, freedgeId) &&
+        request.resource.data.createdAt == request.time;
+      allow update: if isAdmin() &&
+        isValidFreedgeLog(request.resource.data, freedgeId) &&
+        request.resource.data.createdAt == resource.data.createdAt;
+      allow delete: if false;
+    }
+
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

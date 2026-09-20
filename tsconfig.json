@@ -18,6 +18,7 @@
     "paths": {
       "components/*": ["components/*"],
       "config/*": ["config/*"],
+      "data/*": ["data/*"],
       "features/*": ["features/*"],
       "hooks/*": ["hooks/*"],
       "store/*": ["store/*"],

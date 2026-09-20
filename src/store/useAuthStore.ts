@@ -1,9 +1,10 @@
 import { create } from 'zustand';
-import { User, onAuthStateChanged } from 'firebase/auth';
+import { User, getIdTokenResult, onAuthStateChanged } from 'firebase/auth';
 import { getFirebaseAuth } from 'config/firebase';
 
 type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';
 type UserProfileStatus = 'idle' | 'loading' | 'success' | 'error';
+type CustomClaimsStatus = 'idle' | 'loading' | 'success' | 'error';
 
 const USERS_API_URL = process.env.NEXT_PUBLIC_USERS_API_URL;
 
@@ -126,6 +127,8 @@ async function loadUserProfile(user: User): Promise<LoadUserProfileResult> {
 interface AuthState {
   user: User | null;
   status: AuthStatus;
+  isAdmin: boolean;
+  customClaimsStatus: CustomClaimsStatus;
   userProfile: AppUserProfile | null;
   userProfileStatus: UserProfileStatus;
   fetchUserProfile: (user: User) => Promise<void>;
@@ -134,6 +137,8 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set) => ({
   user: null,
   status: 'loading',
+  isAdmin: false,
+  customClaimsStatus: 'idle',
   userProfile: null,
   userProfileStatus: 'idle',
   fetchUserProfile: async (user: User) => {
@@ -170,6 +175,8 @@ export const initAuthListener = (): (() => void) => {
       useAuthStore.setState({
         user: null,
         status: 'unauthenticated',
+        isAdmin: false,
+        customClaimsStatus: 'idle',
         userProfile: null,
         userProfileStatus: 'idle',
       });
@@ -180,9 +187,34 @@ export const initAuthListener = (): (() => void) => {
     useAuthStore.setState({
       user,
       status: 'authenticated',
+      isAdmin: false,
+      customClaimsStatus: 'loading',
       userProfile: cachedProfile,
       userProfileStatus: cachedProfile ? 'success' : 'loading',
     });
+
+    void getIdTokenResult(user)
+      .then((idTokenResult) => {
+        if (useAuthStore.getState().user?.uid !== user.uid) {
+          return;
+        }
+
+        useAuthStore.setState({
+          isAdmin: idTokenResult.claims.admin === true,
+          customClaimsStatus: 'success',
+        });
+      })
+      .catch((error) => {
+        console.error('[useAuthStore] Failed to load custom claims', error);
+        if (useAuthStore.getState().user?.uid !== user.uid) {
+          return;
+        }
+
+        useAuthStore.setState({
+          isAdmin: false,
+          customClaimsStatus: 'error',
+        });
+      });
 
     void useAuthStore.getState().fetchUserProfile(user);
   });
