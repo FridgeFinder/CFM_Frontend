@@ -1,6 +1,17 @@
-import React from 'react';
+'use client';
+
+import React, { useLayoutEffect, useRef, useState } from 'react';
 import Image from 'next/image';
-import { Button, Box, Divider, Link, Stack, Typography } from '@mui/material';
+import {
+  Button,
+  Box,
+  Divider,
+  Link,
+  Stack,
+  Tab,
+  Tabs,
+  Typography,
+} from '@mui/material';
 import {
   CalendarMonth as CalendarMonthIcon,
   CheckCircle as CheckCircleIcon,
@@ -27,6 +38,8 @@ import {
 } from 'theme/icons';
 import { pinColor, designColor } from 'theme/palette';
 import { foodLevelConfig } from 'config/foodLevel';
+import { FridgeActivity } from './FridgeActivity';
+import { FridgeReportImage } from './FridgeReportImage';
 
 // ---------------------------------------------------------------------------
 // Condition map
@@ -526,10 +539,14 @@ export function ReportContainer({
           label="Notes"
           text={notes}
         />
-        <ImageContainer
-          src={photoUrl}
-          alt="Picture of the food within the fridge"
-        />
+        {photoUrl && (
+          <FridgeReportImage
+            src={photoUrl}
+            alt="Picture of the food within the fridge"
+            expandedAlt="Expanded picture of the food within the fridge"
+            borderRadius="20px"
+          />
+        )}
       </SectionDivider>
     </>
   );
@@ -547,6 +564,21 @@ export function FridgeInformation({
   fridge,
   fridgeReportSection,
 }: FridgeInformationProps): React.ReactElement {
+  const [activeTab, setActiveTab] = useState<'info' | 'activity'>('info');
+  const scrollPositionRef = useRef<number | null>(null);
+
+  useLayoutEffect(() => {
+    if (scrollPositionRef.current === null) return;
+
+    const frame = window.requestAnimationFrame(() => {
+      if (scrollPositionRef.current === null) return;
+      window.scrollTo(0, scrollPositionRef.current);
+      scrollPositionRef.current = null;
+    });
+
+    return () => window.cancelAnimationFrame(frame);
+  }, [activeTab]);
+
   return (
     <>
       <Box sx={{ maxWidth: 896, mx: 'auto', width: '100%' }}>
@@ -555,60 +587,168 @@ export function FridgeInformation({
           spacing={3}
           px={2}
           pt={2}
-          mb={{ xs: '72px', md: 4 }}
+          mb={{ xs: activeTab === 'info' ? '72px' : 0, md: 4 }}
+          sx={{ overflowAnchor: 'none' }}
         >
           <FridgeContainer fridge={fridge} />
-          {fridgeReportSection}
-
-          <SectionDivider label="Fridge Host Info">
-            {fridge.notes && (
-              <Stack direction="row" alignItems="flex-start" gap="12px">
-                <InfoOutlinedIcon
-                  sx={{
-                    fontSize: '1.83rem',
-                    color: '#666',
-                    flexShrink: 0,
-                    mt: '2px',
-                  }}
+          <Box>
+            <Tabs
+              value={activeTab}
+              onChange={(_, value: 'info' | 'activity') => {
+                scrollPositionRef.current = window.scrollY;
+                setActiveTab(value);
+              }}
+              aria-label="Fridge information and activity"
+              variant="fullWidth"
+              sx={{
+                borderBottom: 1,
+                borderColor: 'divider',
+                '& .MuiTab-root': { fontWeight: 700, fontSize: '1.125rem' },
+              }}
+            >
+              <Tab
+                label="Info"
+                value="info"
+                id="fridge-info-tab"
+                aria-controls="fridge-info-panel"
+              />
+              <Tab
+                label="Activity"
+                value="activity"
+                id="fridge-activity-tab"
+                aria-controls="fridge-activity-panel"
+              />
+            </Tabs>
+            <Stack
+              role="tabpanel"
+              id="fridge-info-panel"
+              aria-labelledby="fridge-info-tab"
+              aria-hidden={activeTab !== 'info'}
+              direction="column"
+              spacing={3}
+              pt={3}
+              sx={{ display: activeTab === 'info' ? 'flex' : 'none' }}
+            >
+              {fridgeReportSection}
+              <SectionDivider label="Fridge Host Info">
+                {fridge.notes && (
+                  <Stack direction="row" alignItems="flex-start" gap="12px">
+                    <InfoOutlinedIcon
+                      sx={{
+                        fontSize: '1.83rem',
+                        color: '#666',
+                        flexShrink: 0,
+                        mt: '2px',
+                      }}
+                    />
+                    <Box>
+                      <Typography
+                        component="span"
+                        sx={{ fontWeight: 700, color: designColor.neroGray }}
+                      >
+                        Details:
+                      </Typography>
+                      <Typography
+                        variant="body1"
+                        sx={{ color: designColor.neroGray, mt: 0.5 }}
+                      >
+                        {fridge.notes}
+                      </Typography>
+                    </Box>
+                  </Stack>
+                )}
+                <LinkLine
+                  icon={InstagramIcon}
+                  obj={fridge.maintainer ?? null}
+                  url="instagram"
                 />
-                <Box>
-                  <Typography
-                    component="span"
-                    sx={{ fontWeight: 700, color: designColor.neroGray }}
-                  >
-                    Details:
-                  </Typography>
-                  <Typography
-                    variant="body1"
-                    sx={{ color: designColor.neroGray, mt: 0.5 }}
-                  >
-                    {fridge.notes}
-                  </Typography>
-                </Box>
-              </Stack>
-            )}
-            <LinkLine
-              icon={InstagramIcon}
-              obj={fridge.maintainer ?? null}
-              url="instagram"
-            />
-            <LinkLine
-              icon={LanguageIcon}
-              obj={fridge.maintainer ?? null}
-              url="website"
-            />
-          </SectionDivider>
+                <LinkLine
+                  icon={LanguageIcon}
+                  obj={fridge.maintainer ?? null}
+                  url="website"
+                />
+              </SectionDivider>
+            </Stack>
+            <Box
+              role="tabpanel"
+              id="fridge-activity-panel"
+              aria-labelledby="fridge-activity-tab"
+              aria-hidden={activeTab !== 'activity'}
+              sx={{
+                display: activeTab === 'activity' ? 'block' : 'none',
+                pt: 3,
+              }}
+            >
+              <FridgeActivity
+                key={fridge.id}
+                fridgeId={fridge.id}
+                fridgeName={fridge.name}
+                isActive={activeTab === 'activity'}
+              />
+            </Box>
+          </Box>
         </Stack>
 
         {/* Desktop inline Update Status button */}
-        <Box sx={{ display: { xs: 'none', md: 'block' }, px: 2, mb: 4 }}>
+        {activeTab === 'info' && (
+          <Box sx={{ display: { xs: 'none', md: 'block' }, px: 2, mb: 4 }}>
+            <ButtonLink
+              aria-label="Click to report the status of the fridge"
+              variant="contained"
+              to={`/fridge/${fridge.id}/report?from=${encodeURIComponent(`/fridge/${fridge.id}`)}&name=${encodeURIComponent(fridge.name)}`}
+              title="Update Status"
+              sx={{
+                width: 'calc(100% - 16px)',
+                mx: 'auto',
+                borderRadius: '999px',
+                fontWeight: 700,
+                fontSize: { xs: '0.75rem', md: '1rem' },
+                lineHeight: { xs: '1rem', md: '1.25rem' },
+                textTransform: 'uppercase',
+                backgroundColor: designColor.blue.dark,
+                border: `2px solid ${designColor.blue.dark}`,
+                minHeight: { xs: 40, md: 44 },
+                '&:hover': {
+                  opacity: 0.9,
+                  backgroundColor: designColor.blue.dark,
+                },
+                display: 'flex',
+                gap: { xs: '6px', md: '8px' },
+                py: { xs: 1.25, md: 1.125 },
+                px: { xs: 0.75, md: 1.25 },
+              }}
+              startIcon={
+                <EditIcon sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
+              }
+            />
+          </Box>
+        )}
+      </Box>
+
+      {/* Mobile sticky Update Status button */}
+      {activeTab === 'info' && (
+        <Box
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: designColor.white,
+            borderTop: '1px solid rgba(0,0,0,0.12)',
+            px: 2,
+            py: 1.5,
+            zIndex: 40,
+            boxShadow: '0 -2px 8px rgba(0,0,0,0.08)',
+          }}
+        >
           <ButtonLink
             aria-label="Click to report the status of the fridge"
             variant="contained"
             to={`/fridge/${fridge.id}/report?from=${encodeURIComponent(`/fridge/${fridge.id}`)}&name=${encodeURIComponent(fridge.name)}`}
             title="Update Status"
             sx={{
-              width: 'calc(100% - 16px)',
+              width: '96%',
               mx: 'auto',
               borderRadius: '999px',
               fontWeight: 700,
@@ -632,51 +772,7 @@ export function FridgeInformation({
             }
           />
         </Box>
-      </Box>
-
-      {/* Mobile sticky Update Status button */}
-      <Box
-        sx={{
-          display: { xs: 'block', md: 'none' },
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          backgroundColor: designColor.white,
-          borderTop: '1px solid rgba(0,0,0,0.12)',
-          px: 2,
-          py: 1.5,
-          zIndex: 40,
-          boxShadow: '0 -2px 8px rgba(0,0,0,0.08)',
-        }}
-      >
-        <ButtonLink
-          aria-label="Click to report the status of the fridge"
-          variant="contained"
-          to={`/fridge/${fridge.id}/report?from=${encodeURIComponent(`/fridge/${fridge.id}`)}&name=${encodeURIComponent(fridge.name)}`}
-          title="Update Status"
-          sx={{
-            width: '96%',
-            mx: 'auto',
-            borderRadius: '999px',
-            fontWeight: 700,
-            fontSize: { xs: '0.75rem', md: '1rem' },
-            lineHeight: { xs: '1rem', md: '1.25rem' },
-            textTransform: 'uppercase',
-            backgroundColor: designColor.blue.dark,
-            border: `2px solid ${designColor.blue.dark}`,
-            minHeight: { xs: 40, md: 44 },
-            '&:hover': { opacity: 0.9, backgroundColor: designColor.blue.dark },
-            display: 'flex',
-            gap: { xs: '6px', md: '8px' },
-            py: { xs: 1.25, md: 1.125 },
-            px: { xs: 0.75, md: 1.25 },
-          }}
-          startIcon={
-            <EditIcon sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
-          }
-        />
-      </Box>
+      )}
     </>
   );
 }
