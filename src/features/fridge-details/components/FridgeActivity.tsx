@@ -9,6 +9,7 @@ import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
@@ -32,45 +33,6 @@ interface ActivityReport extends FridgeReport {
 interface ReportHistoryPage {
   reports: ActivityReport[];
   nextToken: string | null;
-}
-
-const adjectives = [
-  'Dependable',
-  'Caring',
-  'Kind',
-  'Cheerful',
-  'Generous',
-  'Friendly',
-  'Helpful',
-  'Supportive',
-  'Welcoming',
-  'Thoughtful',
-  'Compassionate',
-  'Collaborative',
-  'Nurturing',
-  'Reliable',
-  'Resilient',
-];
-
-const nouns = ['Neighbor'];
-
-const anonymousMonikers = new Map<string, string>();
-
-export function generateAnonymousMoniker(): string {
-  const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
-  const noun = nouns[Math.floor(Math.random() * nouns.length)];
-  return `${adjective}${noun}`;
-}
-
-function getAnonymousMoniker(userId?: string): string {
-  if (!userId) return generateAnonymousMoniker();
-
-  const existingMoniker = anonymousMonikers.get(userId);
-  if (existingMoniker) return existingMoniker;
-
-  const moniker = generateAnonymousMoniker();
-  anonymousMonikers.set(userId, moniker);
-  return moniker;
 }
 
 const usernameRequests = new Map<string, Promise<string | null>>();
@@ -213,9 +175,8 @@ function ActivityItem({
 }: {
   report: ActivityReport;
 }): React.ReactElement {
-  const [username, setUsername] = useState(() =>
-    getAnonymousMoniker(report.userId)
-  );
+  const [username, setUsername] = useState('Anonymous');
+  const isAnonymous = username === 'Anonymous';
   const condition = conditionPresentation(report.condition);
   const foodLevel = foodLevelConfig[report.foodPercentage];
   const foodLabel = foodLevel?.label ?? 'Unknown';
@@ -249,12 +210,24 @@ function ActivityItem({
             display: 'grid',
             placeItems: 'center',
             flexShrink: 0,
-            bgcolor: designColor.blue.light,
-            color: designColor.blue.dark,
+            boxSizing: 'border-box',
+            overflow: 'hidden',
+            border: isAnonymous ? '1px solid' : undefined,
+            borderColor: designColor.borderGray,
+            bgcolor: isAnonymous ? designColor.white : designColor.blue.light,
+            color: isAnonymous
+              ? designColor.lightSilver
+              : designColor.blue.dark,
             fontWeight: 700,
           }}
         >
-          {username.charAt(0).toLocaleUpperCase()}
+          {isAnonymous ? (
+            <AccountCircleIcon
+              sx={{ width: '100%', height: '100%', transform: 'scale(1.2)' }}
+            />
+          ) : (
+            username.charAt(0).toLocaleUpperCase()
+          )}
         </Box>
         <Box minWidth={0}>
           <Typography sx={{ fontWeight: 700, color: designColor.neroGray }}>

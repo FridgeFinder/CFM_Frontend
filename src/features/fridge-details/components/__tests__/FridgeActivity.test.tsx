@@ -1,10 +1,6 @@
 import React from 'react';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
-import {
-  formatActivityTimestamp,
-  generateAnonymousMoniker,
-  FridgeActivity,
-} from '../FridgeActivity';
+import { formatActivityTimestamp, FridgeActivity } from '../FridgeActivity';
 import { ReportContainer } from '../FridgeInformation';
 
 const mockFetch = jest.fn();
@@ -49,16 +45,6 @@ describe('formatActivityTimestamp', () => {
 
     expect(formatActivityTimestamp(timestamp)).toBe(expected);
   });
-});
-
-it('generates an adjective and Neighbor anonymous moniker', () => {
-  const randomSpy = jest
-    .spyOn(Math, 'random')
-    .mockReturnValueOnce(0)
-    .mockReturnValueOnce(0);
-
-  expect(generateAnonymousMoniker()).toBe('DependableNeighbor');
-  randomSpy.mockRestore();
 });
 
 it('loads report history pages using the returned continuation cursor', async () => {
@@ -155,7 +141,22 @@ it('loads report history pages using the returned continuation cursor', async ()
   const firstAuthor = screen
     .getByRole('article')
     .querySelector('p')?.textContent;
-  expect(firstAuthor).toMatch(/^[A-Z][a-z]+Neighbor$/);
+  expect(firstAuthor).toBe('Anonymous');
+  const anonymousIcon = screen.getByTestId('AccountCircleIcon');
+  expect(anonymousIcon).toBeTruthy();
+  const anonymousAvatar = anonymousIcon.parentElement;
+  expect(anonymousAvatar).not.toBeNull();
+  if (anonymousAvatar) {
+    const avatarStyle = getComputedStyle(anonymousAvatar);
+    expect(avatarStyle.color).toBe('rgb(216, 216, 216)');
+    expect(avatarStyle.backgroundColor).toBe('rgb(255, 255, 255)');
+    expect(avatarStyle.borderColor).toBe('rgb(230, 231, 235)');
+    expect(avatarStyle.borderWidth).toBe('1px');
+  }
+  expect(
+    screen.getByRole('article').querySelector('[aria-hidden="true"]')
+      ?.textContent
+  ).toBe('');
   expect(
     screen.queryByText('No more past activity. Add a new update!')
   ).toBeNull();
@@ -219,6 +220,7 @@ it('displays the username returned by the users API for a report userId', async 
   );
 
   expect(await screen.findByText('blueberry_lover')).toBeTruthy();
+  expect(screen.queryByTestId('AccountCircleIcon')).toBeNull();
   expect(
     screen.getByRole('article').querySelector('[aria-hidden="true"]')
       ?.textContent
