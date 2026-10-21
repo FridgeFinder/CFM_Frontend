@@ -9,6 +9,8 @@ const pageContent = {
     img: {
       src: '/hero/get-involved.webp',
       alt: 'Volunteers in front of a community fridge',
+      // Keep the volunteers' faces in frame on wide, short hero crops
+      objectPosition: 'center 15%',
     },
   },
   introParagraph: {
