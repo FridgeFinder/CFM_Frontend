@@ -614,7 +614,7 @@ export function FridgeInformation({
               aria-label="Fridge information and activity"
               variant="fullWidth"
               sx={{
-                borderBottom: 1,
+                borderBottom: 1.25,
                 borderColor: 'divider',
                 '& .MuiTab-root': {
                   fontWeight: 700,
@@ -626,7 +626,7 @@ export function FridgeInformation({
                   },
                 },
                 '& .MuiTab-root:not(.Mui-selected)': {
-                  color: designColor.secondaryText,
+                  color: designColor.conditionIcon,
                 },
                 '& .MuiTab-root.MuiTab-labelIcon': {
                   minHeight: 48,
