@@ -7,6 +7,7 @@ interface SuccessToastProps {
   onClose: () => void;
   message: string;
   duration?: number;
+  severity?: 'success' | 'error';
 }
 
 export function SuccessToast({
@@ -14,6 +15,7 @@ export function SuccessToast({
   onClose,
   message,
   duration = 3000,
+  severity = 'success',
 }: SuccessToastProps) {
   return (
     <Snackbar
@@ -24,7 +26,7 @@ export function SuccessToast({
       sx={{ mb: { xs: 2, md: 0 } }}
     >
       <Alert
-        severity="success"
+        severity={severity}
         sx={{
           fontSize: '0.875rem',
           py: 0.5,
@@ -34,7 +36,7 @@ export function SuccessToast({
           boxShadow: '0 2px 8px rgba(0,0,0,0.08)',
           color: designColor.neroGray,
           '& .MuiAlert-icon': {
-            color: designColor.blue.dark,
+            color: severity === 'error' ? 'error.main' : designColor.blue.dark,
             fontSize: 16,
             alignItems: 'center',
           },

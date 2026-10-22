@@ -24,6 +24,12 @@ export interface FridgeReport {
   notes?: string;
 }
 
+export type FlaggedFridgeReportStatus =
+  | 'none'
+  | 'deleted'
+  | 'not_inappropriate'
+  | 'not_harmful';
+
 export interface Fridge {
   id: string;
   name: string;
