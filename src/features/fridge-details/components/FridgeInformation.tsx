@@ -505,8 +505,21 @@ export function ReportContainer({
   const foodColor = foodEntry?.color ?? pinColor.itemsEmpty;
 
   return (
-    <>
-      <SectionDivider label="Status">
+    <Stack direction="column" spacing={2}>
+      <Typography
+        variant="caption"
+        sx={{
+          fontWeight: 700,
+          letterSpacing: '0.1em',
+          color: designColor.mutedText,
+          textTransform: 'uppercase',
+          fontSize: '0.65rem',
+          whiteSpace: 'nowrap',
+        }}
+      >
+        Status
+      </Typography>
+      <Stack direction="column" spacing={3}>
         <InfoRow
           icon={
             <CalendarMonthIcon
@@ -547,8 +560,8 @@ export function ReportContainer({
             borderRadius="20px"
           />
         )}
-      </SectionDivider>
-    </>
+      </Stack>
+    </Stack>
   );
 }
 
