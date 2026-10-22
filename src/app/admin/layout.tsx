@@ -14,6 +14,7 @@ import {
 import {
   AddLocationAltOutlined as AddLocationAltOutlinedIcon,
   ContactPageOutlined as ContactPageOutlinedIcon,
+  FlagOutlined as FlagOutlinedIcon,
   KitchenOutlined as KitchenOutlinedIcon,
 } from '@mui/icons-material';
 import { usePathname, useRouter } from 'next/navigation';
@@ -31,6 +32,11 @@ const adminDashboardOptions = [
     label: 'Contact Log',
     href: '/admin/contact-log',
     icon: ContactPageOutlinedIcon,
+  },
+  {
+    label: 'Flagged Reports',
+    href: '/admin/flagged-reports',
+    icon: FlagOutlinedIcon,
   },
   {
     label: 'Freedge',

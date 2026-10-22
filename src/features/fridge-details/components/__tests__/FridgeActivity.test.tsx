@@ -4,10 +4,232 @@ import { formatActivityTimestamp, FridgeActivity } from '../FridgeActivity';
 import { ReportContainer } from '../FridgeInformation';
 
 const mockFetch = jest.fn();
+const mockAddDoc = jest.fn();
+const mockCollection = jest.fn();
+
+jest.mock('firebase/firestore', () => ({
+  addDoc: (...args: unknown[]) => mockAddDoc(...args),
+  collection: (...args: unknown[]) => mockCollection(...args),
+  serverTimestamp: () => 'server-timestamp',
+}));
+
+jest.mock('config/firebase', () => ({
+  getFirebaseFirestore: () => 'firestore',
+}));
 
 beforeEach(() => {
   mockFetch.mockReset();
+  mockAddDoc.mockReset();
+  mockCollection.mockReset().mockReturnValue('flagged-reports-collection');
   global.fetch = mockFetch;
+});
+
+function renderFlaggableReport() {
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({
+      reports: [
+        {
+          fridgeId: 'greenpointfridge',
+          timestamp: '2026-10-13T11:00:00Z',
+          condition: 'good',
+          foodPercentage: 1,
+          epochTimestamp: '1791889200',
+          photoUrl: 'https://example.com/greenpoint.jpg',
+          notes: 'Needs restocking.',
+        },
+      ],
+      nextToken: null,
+    }),
+  });
+  render(
+    <FridgeActivity
+      fridgeId="greenpointfridge"
+      fridgeName="Greenpoint Fridge"
+    />
+  );
+}
+
+it.each(['harmful', 'inaccurate'])(
+  'submits a %s flag for a report without requiring sign-in',
+  async (reason) => {
+    const label = reason === 'harmful' ? 'Harmful' : 'Inaccurate';
+    mockAddDoc.mockResolvedValueOnce({ id: 'flag-1' });
+    renderFlaggableReport();
+    fireEvent.click(await screen.findByRole('button', { name: 'Report' }));
+    expect(screen.getAllByRole('menuitem')).toHaveLength(2);
+    fireEvent.click(screen.getByRole('menuitem', { name: label }));
+
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      'Report submitted. Thank you for letting us know.'
+    );
+    expect(mockCollection).toHaveBeenCalledWith(
+      'firestore',
+      'FlaggedFridgeReports'
+    );
+    expect(mockAddDoc).toHaveBeenCalledTimes(1);
+    expect(mockAddDoc).toHaveBeenCalledWith('flagged-reports-collection', {
+      fridgeId: 'greenpointfridge',
+      reportTimestamp: '2026-10-13T11:00:00Z',
+      reason,
+      status: 'none',
+      report: {
+        fridgeId: 'greenpointfridge',
+        timestamp: '2026-10-13T11:00:00Z',
+        condition: 'good',
+        foodPercentage: 1,
+        epochTimestamp: '1791889200',
+        photoUrl: 'https://example.com/greenpoint.jpg',
+        notes: 'Needs restocking.',
+      },
+      createdAt: 'server-timestamp',
+    });
+    expect(
+      screen.getByRole('button', { name: 'Report' }).hasAttribute('disabled')
+    ).toBe(false);
+    expect(screen.queryByRole('menu')).toBeNull();
+  }
+);
+
+it('omits absent or non-string optional fields from the report snapshot', async () => {
+  mockFetch.mockResolvedValueOnce({
+    ok: true,
+    json: async () => ({
+      reports: [
+        {
+          fridgeId: 'greenpointfridge',
+          timestamp: '2026-10-13T11:00:00Z',
+          condition: 'good',
+          foodPercentage: 1,
+          epochTimestamp: 1791889200,
+          photoUrl: null,
+          notes: null,
+        },
+      ],
+      nextToken: null,
+    }),
+  });
+  mockAddDoc.mockResolvedValueOnce({ id: 'flag-no-optional-fields' });
+
+  render(
+    <FridgeActivity
+      fridgeId="greenpointfridge"
+      fridgeName="Greenpoint Fridge"
+    />
+  );
+  fireEvent.click(await screen.findByRole('button', { name: 'Report' }));
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Harmful' }));
+  await screen.findByRole('alert');
+
+  expect(mockAddDoc).toHaveBeenCalledWith('flagged-reports-collection', {
+    fridgeId: 'greenpointfridge',
+    reportTimestamp: '2026-10-13T11:00:00Z',
+    reason: 'harmful',
+    status: 'none',
+    report: {
+      fridgeId: 'greenpointfridge',
+      timestamp: '2026-10-13T11:00:00Z',
+      condition: 'good',
+      foodPercentage: 1,
+    },
+    createdAt: 'server-timestamp',
+  });
+});
+
+it('disables flagging while the submission is pending', async () => {
+  let resolveSubmission: (() => void) | undefined;
+  mockAddDoc.mockReturnValueOnce(
+    new Promise<void>((resolve) => {
+      resolveSubmission = resolve;
+    })
+  );
+  renderFlaggableReport();
+  fireEvent.click(await screen.findByRole('button', { name: 'Report' }));
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Harmful' }));
+  expect(
+    screen
+      .getByRole('button', { name: 'Reporting...' })
+      .hasAttribute('disabled')
+  ).toBe(true);
+  expect(screen.queryByRole('status')).toBeNull();
+  resolveSubmission?.();
+  expect(
+    (await screen.findByRole('button', { name: 'Report' })).hasAttribute(
+      'disabled'
+    )
+  ).toBe(false);
+});
+
+it('allows reporting again after a successful report', async () => {
+  mockAddDoc.mockResolvedValue({ id: 'repeat-flag' });
+  renderFlaggableReport();
+  fireEvent.click(await screen.findByRole('button', { name: 'Report' }));
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Inaccurate' }));
+  await screen.findByRole('alert');
+
+  fireEvent.click(screen.getByRole('button', { name: 'Report' }));
+  expect(screen.getAllByRole('menuitem')).toHaveLength(2);
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Harmful' }));
+
+  await waitFor(() => expect(mockAddDoc).toHaveBeenCalledTimes(2));
+});
+
+it('shows feedback in a bottom snackbar and preserves the report button after dismissal', async () => {
+  mockAddDoc.mockResolvedValueOnce({ id: 'flag-toast' });
+  renderFlaggableReport();
+  fireEvent.click(await screen.findByRole('button', { name: 'Report' }));
+  fireEvent.click(screen.getByRole('menuitem', { name: 'Harmful' }));
+  const message = await screen.findByRole('alert');
+  const snackbar = message.closest('.MuiSnackbar-root');
+  if (!snackbar) throw new Error('Expected feedback inside a snackbar');
+  expect(snackbar?.className).toContain('MuiSnackbar-anchorOriginBottomCenter');
+  expect(getComputedStyle(snackbar).position).toBe('fixed');
+  fireEvent.keyDown(message, { key: 'Escape' });
+  await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
+  expect(
+    screen.getByRole('button', { name: 'Report' }).hasAttribute('disabled')
+  ).toBe(false);
+});
+
+it('shows a failed flag submission and allows retrying', async () => {
+  const error = new Error('Permission denied');
+  const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
+  try {
+    mockAddDoc
+      .mockRejectedValueOnce(error)
+      .mockResolvedValueOnce({ id: 'flag-2' });
+    renderFlaggableReport();
+    fireEvent.click(await screen.findByRole('button', { name: 'Report' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Inaccurate' }));
+    expect((await screen.findByRole('alert')).textContent).toContain(
+      'Unable to submit your report. Please try again.'
+    );
+    expect(consoleSpy).toHaveBeenCalledWith(
+      'Unable to flag fridge report:',
+      error
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Report' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Harmful' }));
+    expect(
+      await screen.findByText(
+        'Report submitted. Thank you for letting us know.'
+      )
+    ).toBeTruthy();
+    expect(
+      screen.queryByText('Unable to submit your report. Please try again.')
+    ).toBeNull();
+    expect(mockAddDoc).toHaveBeenCalledTimes(2);
+  } finally {
+    consoleSpy.mockRestore();
+  }
+});
+
+it('dismisses the flag menu without submitting', async () => {
+  renderFlaggableReport();
+  fireEvent.click(await screen.findByRole('button', { name: 'Report' }));
+  fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+  await waitFor(() => expect(screen.queryByRole('menu')).toBeNull());
+  expect(mockAddDoc).not.toHaveBeenCalled();
 });
 
 describe('formatActivityTimestamp', () => {

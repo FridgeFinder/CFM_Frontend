@@ -603,16 +603,74 @@ export function FridgeInformation({
               sx={{
                 borderBottom: 1,
                 borderColor: 'divider',
-                '& .MuiTab-root': { fontWeight: 700, fontSize: '1.125rem' },
+                '& .MuiTab-root': {
+                  fontWeight: 700,
+                  fontSize: '1.125rem',
+                  textTransform: 'none',
+                  transition: 'background-color 150ms ease-in-out',
+                  '&:hover': {
+                    backgroundColor: 'action.hover',
+                  },
+                },
+                '& .MuiTab-root:not(.Mui-selected)': {
+                  color: designColor.secondaryText,
+                },
+                '& .MuiTab-root.MuiTab-labelIcon': {
+                  minHeight: 48,
+                  paddingTop: '12px',
+                  paddingBottom: '12px',
+                },
               }}
             >
               <Tab
+                icon={
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.25"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <rect x="5" y="2" width="14" height="20" rx="2" ry="2" />
+                    <line x1="5" y1="11" x2="19" y2="11" />
+                    <line x1="15" y1="5.5" x2="15" y2="7.5" />
+                    <line x1="15" y1="15" x2="15" y2="17" />
+                  </svg>
+                }
+                iconPosition="start"
                 label="Info"
                 value="info"
                 id="fridge-info-tab"
                 aria-controls="fridge-info-panel"
               />
               <Tab
+                icon={
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    width="22"
+                    height="22"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2.25"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="8" y1="6" x2="21" y2="6" />
+                    <line x1="8" y1="12" x2="21" y2="12" />
+                    <line x1="8" y1="18" x2="21" y2="18" />
+                    <line x1="3" y1="6" x2="3.01" y2="6" />
+                    <line x1="3" y1="12" x2="3.01" y2="12" />
+                    <line x1="3" y1="18" x2="3.01" y2="18" />
+                  </svg>
+                }
+                iconPosition="start"
                 label="Activity"
                 value="activity"
                 id="fridge-activity-tab"

@@ -1,18 +1,24 @@
 'use client';
 
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useId, useRef, useState } from 'react';
+import { addDoc, collection, serverTimestamp } from 'firebase/firestore';
 import Image from 'next/image';
 import Alert from '@mui/material/Alert';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline';
 import EditIcon from '@mui/icons-material/Edit';
+import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline';
+import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
+import ReportProblemOutlinedIcon from '@mui/icons-material/ReportProblemOutlined';
 import {
   MapLegendConditionDirtyIcon,
   MapLegendConditionOutOfOrderIcon,
@@ -21,9 +27,10 @@ import {
   MapLegendPinNotAtLocationIcon,
 } from 'theme/icons';
 import { foodLevelConfig } from 'config/foodLevel';
+import { getFirebaseFirestore } from 'config/firebase';
 import { designColor, pinColor } from 'theme/palette';
-import { FridgeReport } from 'types/domain';
-import { ButtonLink } from 'components/ui';
+import type { FlaggedFridgeReportStatus, FridgeReport } from 'types/domain';
+import { ButtonLink, SuccessToast } from 'components/ui';
 import { FridgeReportImage } from './FridgeReportImage';
 
 interface ActivityReport extends FridgeReport {
@@ -33,6 +40,22 @@ interface ActivityReport extends FridgeReport {
 interface ReportHistoryPage {
   reports: ActivityReport[];
   nextToken: string | null;
+}
+
+function getFlaggedReportSnapshot(report: ActivityReport): FridgeReport {
+  return {
+    fridgeId: report.fridgeId,
+    timestamp: report.timestamp,
+    condition: report.condition,
+    foodPercentage: report.foodPercentage,
+    ...(typeof report.epochTimestamp === 'string'
+      ? { epochTimestamp: report.epochTimestamp }
+      : {}),
+    ...(typeof report.photoUrl === 'string'
+      ? { photoUrl: report.photoUrl }
+      : {}),
+    ...(typeof report.notes === 'string' ? { notes: report.notes } : {}),
+  };
 }
 
 const usernameRequests = new Map<string, Promise<string | null>>();
@@ -176,11 +199,45 @@ function ActivityItem({
   report: ActivityReport;
 }): React.ReactElement {
   const [username, setUsername] = useState('Anonymous');
+  const [flagMenuAnchor, setFlagMenuAnchor] = useState<HTMLElement | null>(
+    null
+  );
+  const [flagStatus, setFlagStatus] = useState<
+    'idle' | 'submitting' | 'submitted' | 'error'
+  >('idle');
+  const flagMenuId = useId();
+  const [flagToastOpen, setFlagToastOpen] = useState(false);
+  const flagButtonLabel =
+    flagStatus === 'submitting' ? 'Reporting...' : 'Report';
   const isAnonymous = username === 'Anonymous';
   const condition = conditionPresentation(report.condition);
   const foodLevel = foodLevelConfig[report.foodPercentage];
   const foodLabel = foodLevel?.label ?? 'Unknown';
   const foodColor = foodLevel?.color ?? pinColor.itemsEmpty;
+
+  async function flagReport(reason: 'harmful' | 'inaccurate') {
+    if (flagStatus === 'submitting') return;
+    setFlagMenuAnchor(null);
+    setFlagStatus('submitting');
+    setFlagToastOpen(false);
+
+    try {
+      await addDoc(collection(getFirebaseFirestore(), 'FlaggedFridgeReports'), {
+        fridgeId: report.fridgeId,
+        reportTimestamp: report.timestamp,
+        reason,
+        status: 'none' satisfies FlaggedFridgeReportStatus,
+        report: getFlaggedReportSnapshot(report),
+        createdAt: serverTimestamp(),
+      });
+      setFlagStatus('submitted');
+      setFlagToastOpen(true);
+    } catch (error) {
+      console.error('Unable to flag fridge report:', error);
+      setFlagStatus('error');
+      setFlagToastOpen(true);
+    }
+  }
 
   useEffect(() => {
     let isMounted = true;
@@ -229,7 +286,7 @@ function ActivityItem({
             username.charAt(0).toLocaleUpperCase()
           )}
         </Box>
-        <Box minWidth={0}>
+        <Box minWidth={0} flex={1}>
           <Typography sx={{ fontWeight: 700, color: designColor.neroGray }}>
             {username}
           </Typography>
@@ -237,7 +294,134 @@ function ActivityItem({
             {formatActivityTimestamp(report.timestamp)}
           </Typography>
         </Box>
+        <Button
+          size="small"
+          endIcon={<FlagOutlinedIcon />}
+          aria-label={flagButtonLabel}
+          aria-haspopup="menu"
+          aria-controls={flagMenuAnchor ? flagMenuId : undefined}
+          aria-expanded={Boolean(flagMenuAnchor)}
+          disabled={flagStatus === 'submitting'}
+          onClick={(event) =>
+            setFlagMenuAnchor(
+              flagMenuAnchor
+                ? null
+                : (event.currentTarget.querySelector<HTMLElement>(
+                    '.MuiButton-endIcon'
+                  ) ?? event.currentTarget)
+            )
+          }
+          sx={{
+            alignSelf: 'flex-start',
+            position: 'relative',
+            top: '-8px',
+            flexShrink: 0,
+            color: designColor.secondaryText,
+            minWidth: { xs: 44, sm: 64 },
+            height: 44,
+            '& .MuiButton-endIcon': {
+              marginLeft: { xs: 0, sm: 1 },
+              marginRight: { xs: 0, sm: '-2px' },
+            },
+          }}
+        >
+          <Box component="span" sx={{ display: { xs: 'none', sm: 'inline' } }}>
+            {flagButtonLabel}
+          </Box>
+        </Button>
+        <Menu
+          id={flagMenuId}
+          anchorEl={flagMenuAnchor}
+          open={Boolean(flagMenuAnchor)}
+          onClose={() => setFlagMenuAnchor(null)}
+          disableScrollLock
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          slotProps={{
+            paper: {
+              sx: {
+                mt: 4,
+                borderRadius: 2,
+                borderTopRightRadius: 0,
+                boxShadow: '0 4px 12px rgba(0, 0, 0, 0.18)',
+                overflow: 'visible',
+              },
+            },
+          }}
+        >
+          <MenuItem onClick={() => void flagReport('inaccurate')}>
+            <ErrorOutlineIcon
+              aria-hidden="true"
+              sx={{ mr: 1.5, color: designColor.secondaryText, fontSize: 17 }}
+            />
+            Inaccurate
+          </MenuItem>
+          <MenuItem onClick={() => void flagReport('harmful')}>
+            <ReportProblemOutlinedIcon
+              aria-hidden="true"
+              sx={{ mr: 1.5, color: designColor.secondaryText, fontSize: 17 }}
+            />
+            Harmful
+          </MenuItem>
+          <svg
+            aria-hidden="true"
+            width="12"
+            height="12"
+            viewBox="0 0 12 12"
+            style={{
+              position: 'absolute',
+              top: -12,
+              right: 0,
+              overflow: 'visible',
+              pointerEvents: 'none',
+              zIndex: 1,
+            }}
+          >
+            <defs>
+              <clipPath
+                id={`${flagMenuId}-pointer-shadow-clip`}
+                clipPathUnits="userSpaceOnUse"
+              >
+                <rect x="-12" y="-12" width="36" height="24" />
+              </clipPath>
+              <filter
+                id={`${flagMenuId}-pointer-shadow`}
+                x="-100%"
+                y="-100%"
+                width="300%"
+                height="300%"
+              >
+                <feDropShadow
+                  dx="0"
+                  dy="-2"
+                  stdDeviation="3"
+                  floodColor="#000000"
+                  floodOpacity="0.18"
+                />
+              </filter>
+            </defs>
+            <g clipPath={`url(#${flagMenuId}-pointer-shadow-clip)`}>
+              <path
+                d="M0 12 L6.88 5.12 A3 3 0 0 1 12 7.24 L12 12 Z"
+                fill="white"
+                filter={`url(#${flagMenuId}-pointer-shadow)`}
+              />
+            </g>
+          </svg>
+        </Menu>
       </Stack>
+
+      <SuccessToast
+        open={flagToastOpen}
+        onClose={() => setFlagToastOpen(false)}
+        severity={flagStatus === 'error' ? 'error' : 'success'}
+        duration={flagStatus === 'error' ? 6000 : 3000}
+        message={
+          flagStatus === 'error'
+            ? 'Unable to submit your report. Please try again.'
+            : 'Report submitted. Thank you for letting us know.'
+        }
+      />
 
       {report.notes && (
         <Typography
