@@ -255,7 +255,11 @@ function ActivityItem({
   return (
     <Box
       component="article"
-      sx={{ py: 3, borderBottom: '1px solid', borderColor: 'divider' }}
+      sx={{
+        py: 3,
+        borderBottom: '1px solid',
+        borderColor: designColor.lightSilver,
+      }}
     >
       <Stack direction="row" alignItems="center" spacing={1.5} mb={2}>
         <Box
