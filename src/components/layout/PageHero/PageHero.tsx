@@ -8,6 +8,8 @@ interface PageHeroProps {
   img: {
     src: string;
     alt: string;
+    // CSS object-position: which part of the image stays visible when cropped
+    objectPosition?: string;
   };
   sx?: SxProps<Theme>;
   title?: string;
@@ -49,7 +51,7 @@ export function PageHero({
       <Image
         priority
         fill
-        style={{ objectFit: 'cover' }}
+        style={{ objectFit: 'cover', objectPosition: img.objectPosition }}
         alt={img.alt}
         src={img.src}
       />

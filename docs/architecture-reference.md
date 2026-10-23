@@ -11,6 +11,53 @@
 
 ## UI Design
 
+### Fridge report flags
+
+Each activity report has a **Report** menu with `harmful` and `inaccurate`
+reasons. Anyone, including signed-out visitors, can submit a flag. The Firebase
+Web SDK writes a new document to the `FlaggedFridgeReports` Firestore collection
+using Firebase's write transport; no separate application POST endpoint is needed.
+Documents contain `fridgeId`, `reportTimestamp` (the original report's timestamp),
+`reason`, a `report` snapshot, a moderation `status` (initially `none`), and a
+server-generated `createdAt`. The snapshot
+contains the report's fridge ID, timestamp, condition, food level, and any
+available epoch timestamp, photo URL, and notes. It does not include the
+activity author's `userId`. The top-level fridge ID and timestamp continue to
+identify the report for moderation.
+Older flags without a stored status are displayed as `None`.
+
+The UI disables submission only while a request is pending. Success and failure
+feedback appears in a bottom-center snackbar, matching notification preferences.
+Success auto-dismisses after 3 seconds; errors after 6 seconds. Users can submit
+multiple flags for a report, and flags do not automatically hide or modify the
+original report.
+
+Admins can review the live, newest-first queue at `/admin/flagged-reports`. The
+admin route displays the captured report details and is guarded by the app's
+admin custom claim; Firestore rules also restrict reads, updates, and deletion
+to admins. Admins can set a flag's status to `none`, `not_inappropriate`, or
+`not_harmful`. They can delete the original report through
+`DELETE /v1/fridges/{fridgeId}/reports/{epochTimestamp}`; this keeps the
+Firestore flag, sets its status to `deleted`, and adds a server-timestamped
+`reportDeletedAt` marker. Admins can also delete an individual flag without
+affecting the original activity report. If the API deletion succeeds but
+updating Firestore fails, the admin UI reports that partial failure and retains
+the deleted state for the current page session. The report timestamp is
+displayed in UTC. Older flags created before report
+snapshots were added remain visible with a notice that their report details
+were not captured; without an epoch timestamp, their API delete action is
+disabled. Since report snapshots are supplied with public flags, the delete
+confirmation warns admins to verify the report before proceeding.
+
+Deploy [the Firestore rules](../firestore.rules) to the intended Firebase project
+before enabling this feature. The prototype rules validate the exact fields,
+reason, nested report snapshot, size limits, matching report identifiers, and
+server timestamp; only admins can read or delete flags, while status updates
+are restricted to the enum and the deleted status can only be set together
+with the one-time deletion timestamp. Review and verify the rules before broad
+rollout. Public writes should have usage monitoring and may need App Check or a
+rate-limited backend if abuse becomes a concern.
+
 ### Images
 
 - [Aspect Ratio Guide](https://www.cronyxdigital.com/blog/the-ultimate-website-image-guide)
