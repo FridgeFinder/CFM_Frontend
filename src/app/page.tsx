@@ -177,40 +177,17 @@ function HomepageIntro({
             }}
           >
             <Box
+              component="img"
+              src={image.src}
+              alt={image.alt}
               sx={{
-                position: 'relative',
-                width: { xs: 300, sm: 360, md: 430 },
-                height: { xs: 320, sm: 380, md: 430 },
+                display: 'block',
+                width: '100%',
+                maxWidth: { xs: 240, sm: 285, md: 320 },
+                aspectRatio: '3 / 4',
+                objectFit: 'contain',
               }}
-            >
-              <Box
-                sx={{
-                  position: 'absolute',
-                  top: { xs: 24, sm: 28, md: 40 },
-                  left: '50%',
-                  transform: 'translateX(-50%)',
-                  width: { xs: 230, sm: 275, md: 310 },
-                  height: { xs: 230, sm: 275, md: 310 },
-                  borderRadius: '50%',
-                  backgroundColor: '#F3F4FA',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  overflow: 'visible',
-                }}
-              >
-                <Box
-                  component="img"
-                  src={image.src}
-                  alt={image.alt}
-                  sx={{
-                    width: 'auto',
-                    height: { xs: 250, sm: 300, md: 350 },
-                    objectFit: 'cover',
-                  }}
-                />
-              </Box>
-            </Box>
+            />
           </Grid>
         </Grid>
       </Box>

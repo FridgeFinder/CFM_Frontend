@@ -20,6 +20,24 @@ service cloud.firestore {
     //   - updatedAt: timestamp, required
     //   - contactedAt: timestamp, optional
     //
+    // Collection: FlaggedFridgeReports
+    // Document ID: generated flag ID
+    // Fields:
+    //   - fridgeId: string, required, original fridge identifier
+    //   - reportTimestamp: string, required, original report timestamp
+    //   - reason: string, required, harmful or inaccurate
+    //   - report: map, required, snapshot without author userId:
+    //       fridgeId/timestamp/condition: string, required
+    //       foodPercentage: number, required, one of 0/1/2/3
+    //       epochTimestamp: string, optional, up to 100 characters
+    //       photoUrl: string, optional, up to 4096 characters
+    //       notes: string, optional, up to 10000 characters
+    //   - createdAt: timestamp, required, immutable server timestamp
+    //   - status: string, required enum: none, deleted, not_inappropriate,
+    //     not_harmful; clients may only create with none
+    //   - reportDeletedAt: timestamp, optional, admin-only one-time marker
+    // Access: public create; admin read/delete/status updates.
+    //
     // ===============================================================
     // Helper Functions
     // ===============================================================
@@ -249,6 +267,113 @@ service cloud.firestore {
       allow delete: if false;
     }
 
+    // FlaggedFridgeReports: public moderation submissions; admins may delete.
+    // fridgeId + reportTimestamp identify the original API report.
+    // report snapshots the original report without its author userId.
+    function isValidFlaggedReportSnapshot(report, fridgeId, reportTimestamp) {
+      return report is map &&
+        report.keys().hasAll([
+          'fridgeId',
+          'timestamp',
+          'condition',
+          'foodPercentage'
+        ]) &&
+        hasOnlyAllowedFields(report, [
+          'fridgeId',
+          'timestamp',
+          'epochTimestamp',
+          'condition',
+          'foodPercentage',
+          'photoUrl',
+          'notes'
+        ]) &&
+        report.fridgeId is string &&
+        report.fridgeId == fridgeId &&
+        report.timestamp is string &&
+        report.timestamp == reportTimestamp &&
+        report.condition is string &&
+        report.condition.size() > 0 &&
+        report.condition.size() <= 100 &&
+        report.foodPercentage is number &&
+        report.foodPercentage in [0, 1, 2, 3] &&
+        validOptionalString(report, 'epochTimestamp', 100) &&
+        validOptionalString(report, 'photoUrl', 4096) &&
+        validOptionalString(report, 'notes', 10000);
+    }
+
+    function isValidFlaggedFridgeReport(data) {
+      return data.keys().hasAll([
+          'fridgeId',
+          'reportTimestamp',
+          'reason',
+          'report',
+          'createdAt',
+          'status'
+        ]) &&
+        hasOnlyAllowedFields(data, [
+          'fridgeId',
+          'reportTimestamp',
+          'reason',
+          'report',
+          'createdAt',
+          'status'
+        ]) &&
+        data.fridgeId is string &&
+        data.fridgeId.size() > 0 && data.fridgeId.size() <= 80 &&
+        data.reportTimestamp is string &&
+        data.reportTimestamp.size() > 0 && data.reportTimestamp.size() <= 100 &&
+        data.reason in ['harmful', 'inaccurate'] &&
+        isValidFlaggedReportSnapshot(
+          data.report,
+          data.fridgeId,
+          data.reportTimestamp
+        ) &&
+        data.createdAt is timestamp &&
+        data.createdAt == request.time &&
+        data.status == 'none';
+    }
+
+    function isValidFlaggedFridgeReportStatus(status) {
+      return status is string &&
+        status in [
+          'none',
+          'deleted',
+          'not_inappropriate',
+          'not_harmful'
+        ];
+    }
+
+    function canUpdateFlaggedFridgeReport() {
+      let changedKeys = request.resource.data.diff(resource.data).affectedKeys();
+      let status = request.resource.data.status;
+      return isAdmin() &&
+        isValidFlaggedFridgeReportStatus(status) &&
+        changedKeys.hasOnly(['status', 'reportDeletedAt']) &&
+        (
+          (
+            changedKeys.hasAll(['status']) &&
+            status in ['none', 'not_inappropriate', 'not_harmful'] &&
+            (!('status' in resource.data) || resource.data.status != 'deleted') &&
+            !('reportDeletedAt' in resource.data) &&
+            !('reportDeletedAt' in request.resource.data)
+          ) ||
+          (
+            changedKeys.hasAll(['status', 'reportDeletedAt']) &&
+            status == 'deleted' &&
+            (!('status' in resource.data) || resource.data.status != 'deleted') &&
+            !('reportDeletedAt' in resource.data) &&
+            request.resource.data.reportDeletedAt is timestamp &&
+            request.resource.data.reportDeletedAt == request.time
+          )
+        );
+    }
+
+    match /FlaggedFridgeReports/{flagId} {
+      allow create: if isValidFlaggedFridgeReport(request.resource.data);
+      allow read: if isAdmin();
+      allow update: if canUpdateFlaggedFridgeReport();
+      allow delete: if isAdmin();
+    }
 
     match /{document=**} {
       allow read, write: if false;
