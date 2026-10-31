@@ -119,6 +119,32 @@ File: `src/app/fridge/[id]/report/page.tsx`
 - It then calls `invalidate()` so the next authoritative list fetch bypasses the TTL.
 - This is a deliberate hybrid: optimistic UX now, canonical data on next fetch.
 
+### Browse List Rendering
+
+- The main `/browse` list uses `react-window` to mount only visible fridge rows
+  plus up to five rows above and five below the viewport. Distant rows unmount
+  as the user scrolls; the DOM does not grow with every row visited.
+- Row heights are measured dynamically to accommodate wrapping text, report
+  content, and responsive widths. Action controls wrap to fit narrow panels.
+  The search/filter header stays outside the list's scroll viewport, and the
+  final row retains bottom breathing room.
+- Search/filter changes and changes to the result order reset the list to the
+  top. Equivalent data refreshes do not reset it. Row heights are cached per
+  fridge (not per position), so re-sorting after a map pan reuses existing
+  measurements instead of re-measuring every row; content and width changes
+  still invalidate them. Measurements and scroll resets are applied before
+  paint so re-sorts do not flicker.
+- On mobile, the main list stays mounted and measured while visually hidden
+  in Map View, so Show List reveals an already prepared virtualized window.
+  Hidden controls are not focusable or interactive. Switching views alone
+  preserves the list's scroll position. On desktop, the list stays visible
+  beside the map. The mobile map search dropdown is not virtualized.
+- This changes rendering only: the full dataset remains cached and available
+  to app search, filters, distance sorting, and map markers. It does not add
+  backend pagination or reduce the dataset download.
+- Browser Find (Ctrl/Cmd+F) cannot reliably find unmounted rows. Use the app's
+  search field to search the full dataset.
+
 ## 4. Profile Action Stats Cache
 
 File: `src/app/profile/page.tsx`
