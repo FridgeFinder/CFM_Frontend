@@ -88,6 +88,24 @@ describe('rendering', () => {
     ).toBeInTheDocument();
   });
 
+  it('does not render the permanently unavailable option for non-admins', () => {
+    render(<ReportForm {...defaultProps} />);
+    expect(
+      screen.queryByRole('radio', {
+        name: 'Fridge is permanently unavailable - admin only',
+      })
+    ).not.toBeInTheDocument();
+  });
+
+  it('renders the permanently unavailable option for admins', () => {
+    render(<ReportForm {...defaultProps} isAdmin />);
+    expect(
+      screen.getByRole('radio', {
+        name: 'Fridge is permanently unavailable - admin only',
+      })
+    ).toHaveAttribute('value', 'ghost');
+  });
+
   it('defaults condition to "good"', () => {
     render(<ReportForm {...defaultProps} />);
     expect(

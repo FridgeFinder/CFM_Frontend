@@ -28,6 +28,7 @@ interface ReportFormProps {
   onSubmit: (data: ReportFormData) => void;
   initialValues?: Partial<ReportFormData>;
   cancelTo?: string;
+  isAdmin?: boolean;
 }
 
 function FoodLevelLabel({ color, label }: { color: string; label: string }) {
@@ -89,6 +90,7 @@ export function ReportForm({
   onSubmit,
   initialValues,
   cancelTo = '/browse',
+  isAdmin = false,
 }: ReportFormProps): React.ReactElement {
   const {
     register,
@@ -196,13 +198,13 @@ export function ReportForm({
                         value="not at location"
                         label="Fridge is not at location"
                       />
-                      {/* We will be migrating all ghost fridges to "not at location"
-                      disabling for now */}
-                      {/* <FormControlLabel
-                        control={<Radio />}
-                        value="ghost"
-                        label="Fridge is permanently unavailable"
-                      /> */}
+                      {isAdmin && (
+                        <FormControlLabel
+                          control={<Radio />}
+                          value="ghost"
+                          label="Fridge is permanently unavailable - admin only"
+                        />
+                      )}
                     </RadioGroup>
                   )}
                 />

@@ -1,22 +1,20 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import {
   Alert,
   Box,
   Button,
-  IconButton,
-  LinearProgress,
   Stack,
   TextField,
   Typography,
 } from '@mui/material';
-import { Close as CloseIcon } from '@mui/icons-material';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { useAuthStore } from 'store/useAuthStore';
 import { designColor } from 'theme/palette';
+import { FridgePhotoPicker } from './FridgePhotoPicker';
 
 const FRIDGES_API_URL = '/v1/fridges/';
 const PHOTO_API_URL = '/v1/photo';
@@ -141,6 +139,23 @@ function convertImageToWebp(file: File): Promise<File> {
   });
 }
 
+export async function uploadFridgePhoto(file: File): Promise<string> {
+  const webpFile = await convertImageToWebp(file);
+  const response = await fetch(PHOTO_API_URL, {
+    method: 'POST',
+    headers: { 'Content-Type': 'image/webp' },
+    body: webpFile,
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to upload photo (${response.status})`);
+  }
+  const data: { photoUrl?: unknown } = await response.json();
+  if (typeof data.photoUrl !== 'string' || !data.photoUrl) {
+    throw new Error('Photo upload did not return a photo URL.');
+  }
+  return data.photoUrl;
+}
+
 interface AddFridgeFormProps {
   defaultValues?: Partial<AddFridgeFormData>;
   initialPhotoUrl?: string;
@@ -157,10 +172,13 @@ export function AddFridgeForm({
   const [errorMessage, setErrorMessage] = useState('');
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
-  const [isDraggingPhoto, setIsDraggingPhoto] = useState(false);
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
-  const [isLoadingInitialPhoto, setIsLoadingInitialPhoto] = useState(false);
-  const photoInputRef = useRef<HTMLInputElement | null>(null);
+  const [loadedInitialPhotoUrl, setLoadedInitialPhotoUrl] = useState<
+    string | null
+  >(null);
+  const isLoadingInitialPhoto = Boolean(
+    initialPhotoUrl && loadedInitialPhotoUrl !== initialPhotoUrl
+  );
   const {
     register,
     handleSubmit,
@@ -203,7 +221,6 @@ export function AddFridgeForm({
     }
 
     let isCancelled = false;
-    setIsLoadingInitialPhoto(true);
 
     (async () => {
       try {
@@ -235,7 +252,7 @@ export function AddFridgeForm({
         }
       } finally {
         if (!isCancelled) {
-          setIsLoadingInitialPhoto(false);
+          setLoadedInitialPhotoUrl(initialPhotoUrl);
         }
       }
     })();
@@ -243,36 +260,7 @@ export function AddFridgeForm({
     return () => {
       isCancelled = true;
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [initialPhotoUrl]);
-
-  function handlePhotoChange(event: React.ChangeEvent<HTMLInputElement>): void {
-    const file = event.target.files?.[0];
-    event.target.value = '';
-
-    if (file) {
-      handlePhotoFile(file);
-    }
-  }
-
-  function handlePhotoDrop(event: React.DragEvent<HTMLDivElement>): void {
-    event.preventDefault();
-    setIsDraggingPhoto(false);
-
-    const file = event.dataTransfer.files[0];
-    if (file) {
-      handlePhotoFile(file);
-    }
-  }
-
-  function handleDropzoneKeyDown(
-    event: React.KeyboardEvent<HTMLDivElement>
-  ): void {
-    if (event.key === 'Enter' || event.key === ' ') {
-      event.preventDefault();
-      photoInputRef.current?.click();
-    }
-  }
 
   function handleRemovePhoto(): void {
     setPhotoFile(null);
@@ -283,28 +271,6 @@ export function AddFridgeForm({
 
       return null;
     });
-  }
-
-  async function uploadPhoto(file: File): Promise<string> {
-    const webpFile = await convertImageToWebp(file);
-    const response = await fetch(PHOTO_API_URL, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'image/webp',
-      },
-      body: webpFile,
-    });
-
-    if (!response.ok) {
-      throw new Error(`Failed to upload photo (${response.status})`);
-    }
-
-    const data = (await response.json()) as { photoUrl?: string };
-    if (!data.photoUrl) {
-      throw new Error('Photo upload did not return a photo URL.');
-    }
-
-    return data.photoUrl;
   }
 
   async function onSubmit(values: AddFridgeFormData): Promise<void> {
@@ -318,7 +284,9 @@ export function AddFridgeForm({
 
     try {
       setIsUploadingPhoto(Boolean(photoFile));
-      const uploadedPhotoUrl = photoFile ? await uploadPhoto(photoFile) : null;
+      const uploadedPhotoUrl = photoFile
+        ? await uploadFridgePhoto(photoFile)
+        : null;
       const idToken = await user.getIdToken();
       const response = await fetch(FRIDGES_API_URL, {
         method: 'POST',
@@ -370,109 +338,14 @@ export function AddFridgeForm({
             helperText={errors.name?.message}
           />
 
-          <Box
-            role="button"
-            tabIndex={0}
-            aria-label="Click or drag a photo here"
-            onClick={() =>
-              !isLoadingInitialPhoto && photoInputRef.current?.click()
-            }
-            onKeyDown={handleDropzoneKeyDown}
-            onDragOver={(event) => {
-              event.preventDefault();
-              setIsDraggingPhoto(true);
-            }}
-            onDragLeave={() => setIsDraggingPhoto(false)}
-            onDrop={handlePhotoDrop}
-            sx={{
-              position: 'relative',
-              width: '100%',
-              minHeight: { xs: 180, sm: 220 },
-              borderRadius: 2,
-              border: '1.5px dashed',
-              borderColor: isDraggingPhoto
-                ? designColor.blue.dark
-                : designColor.borderGray,
-              bgcolor: isDraggingPhoto ? designColor.blue.pale : 'grey.50',
-              overflow: 'hidden',
-              cursor:
-                isUploadingPhoto || isSubmitting || isLoadingInitialPhoto
-                  ? 'default'
-                  : 'pointer',
-              display: 'grid',
-              placeItems: 'center',
-              transition: 'border-color 0.2s ease, background-color 0.2s ease',
-            }}
-          >
-            {photoPreviewUrl && (
-              <Box
-                component="img"
-                src={photoPreviewUrl}
-                alt="Selected fridge upload preview"
-                sx={{
-                  position: 'absolute',
-                  inset: 0,
-                  width: '100%',
-                  height: '100%',
-                  objectFit: 'contain',
-                  bgcolor: designColor.whiteSmoke,
-                }}
-              />
-            )}
-            {!photoPreviewUrl && (
-              <Typography
-                sx={{
-                  position: 'relative',
-                  zIndex: 1,
-                  fontWeight: 700,
-                  textAlign: 'center',
-                }}
-              >
-                {isLoadingInitialPhoto
-                  ? 'Loading existing photo...'
-                  : 'Click or drag a photo here'}
-              </Typography>
-            )}
-            {photoPreviewUrl && (
-              <IconButton
-                aria-label="Remove uploaded photo"
-                size="small"
-                onClick={(event) => {
-                  event.stopPropagation();
-                  handleRemovePhoto();
-                }}
-                disabled={isSubmitting}
-                sx={{
-                  position: 'absolute',
-                  top: 8,
-                  right: 8,
-                  zIndex: 2,
-                  bgcolor: designColor.red.danger,
-                  color: designColor.white,
-                  boxShadow: '0 2px 8px rgba(0,0,0,0.25)',
-                  '&:hover': { bgcolor: '#E54F4F' },
-                }}
-              >
-                <CloseIcon fontSize="small" />
-              </IconButton>
-            )}
-            {(isUploadingPhoto || isLoadingInitialPhoto) && (
-              <LinearProgress
-                sx={{ position: 'absolute', left: 0, right: 0, bottom: 0 }}
-              />
-            )}
-            <Box
-              component="input"
-              ref={photoInputRef}
-              type="file"
-              accept="image/*"
-              onChange={handlePhotoChange}
-              disabled={
-                isUploadingPhoto || isSubmitting || isLoadingInitialPhoto
-              }
-              sx={{ display: 'none' }}
-            />
-          </Box>
+          <FridgePhotoPicker
+            previewUrl={photoPreviewUrl}
+            disabled={isSubmitting || isUploadingPhoto}
+            loading={isUploadingPhoto || isLoadingInitialPhoto}
+            onSelect={handlePhotoFile}
+            onRemove={handleRemovePhoto}
+            onError={setErrorMessage}
+          />
 
           <Typography variant="subtitle2" sx={{ fontWeight: 700, pt: 1 }}>
             Location
