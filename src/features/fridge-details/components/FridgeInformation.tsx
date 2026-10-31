@@ -40,6 +40,9 @@ import { pinColor, designColor } from 'theme/palette';
 import { foodLevelConfig } from 'config/foodLevel';
 import { FridgeActivity } from './FridgeActivity';
 import { FridgeReportImage } from './FridgeReportImage';
+import { FridgeReportSection } from './FridgeReportSection';
+import { GhostUpdatesNotice } from './GhostUpdatesNotice';
+import { useLatestFridgeReport } from '../hooks/useLatestFridgeReport';
 
 // ---------------------------------------------------------------------------
 // Condition map
@@ -570,15 +573,18 @@ export function ReportContainer({
 // ---------------------------------------------------------------------------
 export interface FridgeInformationProps {
   fridge: Fridge;
-  fridgeReportSection?: React.ReactNode;
 }
 
 export function FridgeInformation({
   fridge,
-  fridgeReportSection,
 }: FridgeInformationProps): React.ReactElement {
   const [activeTab, setActiveTab] = useState<'info' | 'activity'>('info');
   const scrollPositionRef = useRef<number | null>(null);
+  const latestReport = useLatestFridgeReport(fridge.id);
+  const isGhost =
+    latestReport.status === 'success' &&
+    latestReport.report?.condition === 'ghost';
+  const canUpdate = !isGhost;
 
   useLayoutEffect(() => {
     if (scrollPositionRef.current === null) return;
@@ -700,7 +706,19 @@ export function FridgeInformation({
               pt={3}
               sx={{ display: activeTab === 'info' ? 'flex' : 'none' }}
             >
-              {fridgeReportSection}
+              <FridgeReportSection
+                report={
+                  latestReport.status === 'success'
+                    ? latestReport.report
+                    : undefined
+                }
+                error={
+                  latestReport.status === 'error'
+                    ? latestReport.error
+                    : undefined
+                }
+                onRetry={latestReport.retry}
+              />
               <SectionDivider label="Fridge Host Info">
                 {fridge.notes && (
                   <Stack direction="row" alignItems="flex-start" gap="12px">
@@ -750,11 +768,20 @@ export function FridgeInformation({
                 pt: 3,
               }}
             >
+              {latestReport.status === 'error' && (
+                <FridgeReportSection
+                  report={undefined}
+                  error={latestReport.error}
+                  onRetry={latestReport.retry}
+                />
+              )}
               <FridgeActivity
                 key={fridge.id}
                 fridgeId={fridge.id}
                 fridgeName={fridge.name}
                 isActive={activeTab === 'activity'}
+                canUpdate={canUpdate}
+                isGhost={isGhost}
               />
             </Box>
           </Box>
@@ -763,13 +790,70 @@ export function FridgeInformation({
         {/* Desktop inline Update Status button */}
         {activeTab === 'info' && (
           <Box sx={{ display: { xs: 'none', md: 'block' }, px: 2, mb: 4 }}>
+            {isGhost ? (
+              <GhostUpdatesNotice />
+            ) : (
+              <ButtonLink
+                aria-label="Click to report the status of the fridge"
+                variant="contained"
+                to={`/fridge/${fridge.id}/report?from=${encodeURIComponent(`/fridge/${fridge.id}`)}&name=${encodeURIComponent(fridge.name)}`}
+                title="Update Status"
+                sx={{
+                  width: 'calc(100% - 16px)',
+                  mx: 'auto',
+                  borderRadius: '999px',
+                  fontWeight: 700,
+                  fontSize: { xs: '0.75rem', md: '1rem' },
+                  lineHeight: { xs: '1rem', md: '1.25rem' },
+                  textTransform: 'uppercase',
+                  backgroundColor: designColor.blue.dark,
+                  border: `2px solid ${designColor.blue.dark}`,
+                  minHeight: { xs: 40, md: 44 },
+                  '&:hover': {
+                    opacity: 0.9,
+                    backgroundColor: designColor.blue.dark,
+                  },
+                  display: 'flex',
+                  gap: { xs: '6px', md: '8px' },
+                  py: { xs: 1.25, md: 1.125 },
+                  px: { xs: 0.75, md: 1.25 },
+                }}
+                startIcon={
+                  <EditIcon sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
+                }
+              />
+            )}
+          </Box>
+        )}
+      </Box>
+
+      {/* Mobile sticky Update Status button */}
+      {activeTab === 'info' && (
+        <Box
+          sx={{
+            display: { xs: 'block', md: 'none' },
+            position: 'fixed',
+            bottom: 0,
+            left: 0,
+            right: 0,
+            backgroundColor: designColor.white,
+            borderTop: '1px solid rgba(0,0,0,0.12)',
+            px: 2,
+            py: 1.5,
+            zIndex: 40,
+            boxShadow: '0 -2px 8px rgba(0,0,0,0.08)',
+          }}
+        >
+          {isGhost ? (
+            <GhostUpdatesNotice />
+          ) : (
             <ButtonLink
               aria-label="Click to report the status of the fridge"
               variant="contained"
               to={`/fridge/${fridge.id}/report?from=${encodeURIComponent(`/fridge/${fridge.id}`)}&name=${encodeURIComponent(fridge.name)}`}
               title="Update Status"
               sx={{
-                width: 'calc(100% - 16px)',
+                width: '96%',
                 mx: 'auto',
                 borderRadius: '999px',
                 fontWeight: 700,
@@ -792,56 +876,7 @@ export function FridgeInformation({
                 <EditIcon sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
               }
             />
-          </Box>
-        )}
-      </Box>
-
-      {/* Mobile sticky Update Status button */}
-      {activeTab === 'info' && (
-        <Box
-          sx={{
-            display: { xs: 'block', md: 'none' },
-            position: 'fixed',
-            bottom: 0,
-            left: 0,
-            right: 0,
-            backgroundColor: designColor.white,
-            borderTop: '1px solid rgba(0,0,0,0.12)',
-            px: 2,
-            py: 1.5,
-            zIndex: 40,
-            boxShadow: '0 -2px 8px rgba(0,0,0,0.08)',
-          }}
-        >
-          <ButtonLink
-            aria-label="Click to report the status of the fridge"
-            variant="contained"
-            to={`/fridge/${fridge.id}/report?from=${encodeURIComponent(`/fridge/${fridge.id}`)}&name=${encodeURIComponent(fridge.name)}`}
-            title="Update Status"
-            sx={{
-              width: '96%',
-              mx: 'auto',
-              borderRadius: '999px',
-              fontWeight: 700,
-              fontSize: { xs: '0.75rem', md: '1rem' },
-              lineHeight: { xs: '1rem', md: '1.25rem' },
-              textTransform: 'uppercase',
-              backgroundColor: designColor.blue.dark,
-              border: `2px solid ${designColor.blue.dark}`,
-              minHeight: { xs: 40, md: 44 },
-              '&:hover': {
-                opacity: 0.9,
-                backgroundColor: designColor.blue.dark,
-              },
-              display: 'flex',
-              gap: { xs: '6px', md: '8px' },
-              py: { xs: 1.25, md: 1.125 },
-              px: { xs: 0.75, md: 1.25 },
-            }}
-            startIcon={
-              <EditIcon sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
-            }
-          />
+          )}
         </Box>
       )}
     </>

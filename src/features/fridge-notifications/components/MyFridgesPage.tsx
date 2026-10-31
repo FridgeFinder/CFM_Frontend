@@ -266,29 +266,31 @@ function FridgeCard({ fridge }: { fridge: Fridge }): React.ReactElement {
               },
             }}
           />
-          <ButtonLink
-            variant="contained"
-            to={reportHref}
-            aria-label={`Update status for ${name}`}
-            title="UPDATE STATUS"
-            sx={{
-              flex: 1,
-              borderRadius: '999px',
-              fontSize: '0.75rem',
-              fontWeight: 700,
-              textTransform: 'none',
-              '&.MuiButton-contained': {
-                py: 0.5,
-                height: 38,
-              },
-              backgroundColor: designColor.blue.dark,
-              border: `2px solid ${designColor.blue.dark}`,
-              '&:hover': {
-                opacity: 0.9,
+          {report?.condition !== 'ghost' && (
+            <ButtonLink
+              variant="contained"
+              to={reportHref}
+              aria-label={`Update status for ${name}`}
+              title="UPDATE STATUS"
+              sx={{
+                flex: 1,
+                borderRadius: '999px',
+                fontSize: '0.75rem',
+                fontWeight: 700,
+                textTransform: 'none',
+                '&.MuiButton-contained': {
+                  py: 0.5,
+                  height: 38,
+                },
                 backgroundColor: designColor.blue.dark,
-              },
-            }}
-          />
+                border: `2px solid ${designColor.blue.dark}`,
+                '&:hover': {
+                  opacity: 0.9,
+                  backgroundColor: designColor.blue.dark,
+                },
+              }}
+            />
+          )}
           <IconButton
             aria-label={`Edit alerts for ${name}`}
             component={Link}

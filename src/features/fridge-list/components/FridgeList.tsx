@@ -313,13 +313,15 @@ export const FridgeList = React.memo(function FridgeList({
                   })
                 }
               />
-              <ButtonLink
-                variant="contained"
-                to={`/fridge/${fridge.id}/report?from=${encodeURIComponent('/browse')}&name=${encodeURIComponent(fridge.name)}`}
-                aria-label={`Update Status on ${fridge.name}`}
-                sx={{ fontSize: '0.85rem', py: 1.5, px: 4 }}
-                title="Update status"
-              />
+              {fridge.report?.condition !== 'ghost' && (
+                <ButtonLink
+                  variant="contained"
+                  to={`/fridge/${fridge.id}/report?from=${encodeURIComponent('/browse')}&name=${encodeURIComponent(fridge.name)}`}
+                  aria-label={`Update Status on ${fridge.name}`}
+                  sx={{ fontSize: '0.85rem', py: 1.5, px: 4 }}
+                  title="Update status"
+                />
+              )}
               <Tooltip title="Notifications">
                 <IconButton
                   aria-label={`Notifications for ${fridge.name}`}
