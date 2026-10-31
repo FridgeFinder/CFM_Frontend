@@ -129,6 +129,24 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('MyFridgesPage', () => {
+  it('hides ghost update links while preserving profile and alerts', async () => {
+    setupStores({
+      getFridgeById: jest.fn().mockReturnValue({
+        ...baseFridge,
+        report: { ...baseFridge.report!, condition: 'ghost' },
+      }),
+    });
+    render(<MyFridgesPage />);
+    expect(
+      await screen.findByRole('link', { name: /view profile for test fridge/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /update status/i })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /edit alerts for test fridge/i })
+    ).toBeInTheDocument();
+  });
   describe('auth loading state', () => {
     it('renders loading skeletons while auth status is loading', () => {
       setupStores({ authStatus: 'loading', user: null });

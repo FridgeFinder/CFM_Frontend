@@ -165,6 +165,15 @@ describe('fridge status display', () => {
     };
     render(<FridgeList fridges={[fridge]} />);
     expect(screen.getByText('Ghost Fridge')).toBeInTheDocument();
+    expect(
+      screen.queryByRole('link', { name: /update status/i })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /details on test fridge/i })
+    ).toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /notifications for test fridge/i })
+    ).toBeInTheDocument();
   });
 
   it('shows "Needs cleaning" for dirty condition', () => {

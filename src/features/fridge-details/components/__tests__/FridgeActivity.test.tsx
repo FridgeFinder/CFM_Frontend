@@ -50,6 +50,61 @@ function renderFlaggableReport() {
   );
 }
 
+it('replaces the ghost activity call to action without hiding history', async () => {
+  mockFetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({
+      reports: [
+        {
+          fridgeId: 'ghost-1',
+          timestamp: '2026-10-30T12:00:00Z',
+          condition: 'good',
+          foodPercentage: 1,
+          notes: 'Past activity',
+        },
+      ],
+      nextToken: null,
+    }),
+  });
+  render(
+    <FridgeActivity
+      fridgeId="ghost-1"
+      fridgeName="Ghost Fridge"
+      canUpdate={false}
+      isGhost
+    />
+  );
+  expect(await screen.findByText('Past activity')).toBeInTheDocument();
+  expect(
+    screen.getByText('Updates are disabled for Ghost fridges')
+  ).toBeInTheDocument();
+  expect(
+    screen.queryByRole('link', { name: /report the status/i })
+  ).not.toBeInTheDocument();
+  expect(screen.queryByText(/add a new update/i)).not.toBeInTheDocument();
+});
+
+it('does not offer activity updates while eligibility is unknown', async () => {
+  mockFetch.mockResolvedValue({
+    ok: true,
+    json: async () => ({ reports: [], nextToken: null }),
+  });
+  render(
+    <FridgeActivity
+      fridgeId="loading-1"
+      fridgeName="Loading Fridge"
+      canUpdate={false}
+    />
+  );
+  await screen.findByText('No more past activity.');
+  expect(
+    screen.queryByRole('link', { name: /report the status/i })
+  ).not.toBeInTheDocument();
+  expect(
+    screen.queryByText('Updates are disabled for Ghost fridges')
+  ).not.toBeInTheDocument();
+});
+
 it.each(['harmful', 'inaccurate'])(
   'submits a %s flag for a report without requiring sign-in',
   async (reason) => {

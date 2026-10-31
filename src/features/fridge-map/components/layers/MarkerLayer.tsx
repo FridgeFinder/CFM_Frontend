@@ -170,17 +170,19 @@ export function MarkerLayer({
                     });
                   }}
                 />
-                <ButtonLink
-                  variant="contained"
-                  to={`/fridge/${id}/report?from=${encodeURIComponent('/browse')}&name=${encodeURIComponent(name)}`}
-                  aria-label={`Update status of ${name}`}
-                  sx={{ fontSize: '0.85rem', px: 3, py: 1.5 }}
-                  style={{ color: 'white' }}
-                  title="Update Status"
-                  onClick={() => {
-                    navigatingFromPopupRef.current = true;
-                  }}
-                />
+                {condition !== 'ghost' && (
+                  <ButtonLink
+                    variant="contained"
+                    to={`/fridge/${id}/report?from=${encodeURIComponent('/browse')}&name=${encodeURIComponent(name)}`}
+                    aria-label={`Update status of ${name}`}
+                    sx={{ fontSize: '0.85rem', px: 3, py: 1.5 }}
+                    style={{ color: 'white' }}
+                    title="Update Status"
+                    onClick={() => {
+                      navigatingFromPopupRef.current = true;
+                    }}
+                  />
+                )}
               </Stack>
             </Popup>
           </Marker>

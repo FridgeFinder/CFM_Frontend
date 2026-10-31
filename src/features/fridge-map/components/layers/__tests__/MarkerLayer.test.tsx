@@ -135,6 +135,24 @@ beforeEach(() => {
 // --- Tests ---
 
 describe('rendering', () => {
+  it('hides ghost update links while preserving the profile link', () => {
+    render(
+      <MarkerLayer
+        fridges={[
+          {
+            ...baseFridge,
+            report: { ...baseFridge.report!, condition: 'ghost' },
+          },
+        ]}
+      />
+    );
+    expect(
+      screen.queryByRole('link', { name: /update status/i })
+    ).not.toBeInTheDocument();
+    expect(
+      screen.getByRole('link', { name: /view profile/i })
+    ).toBeInTheDocument();
+  });
   it('renders a marker for a fridge with valid coordinates', () => {
     render(<MarkerLayer fridges={[baseFridge]} />);
     expect(screen.getByTestId('marker')).toBeInTheDocument();
