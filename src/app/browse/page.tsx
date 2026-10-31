@@ -160,6 +160,14 @@ export default function BrowsePage(): React.ReactElement {
     activeFilters,
     toggleFilter,
   } = useFridgeSearch(fridges);
+  const handleFridgeSelect = useCallback(
+    (id: string) => {
+      setSelectedFridgeId(id);
+      setCurrentView('map');
+    },
+    [setSelectedFridgeId]
+  );
+  const listResetKey = JSON.stringify([searchQuery, [...activeFilters].sort()]);
 
   // Snapshot of mapFridges that only updates when the map is visible.
   const [mapFridgesSnapshot, setMapFridgesSnapshot] =
@@ -318,16 +326,31 @@ export default function BrowsePage(): React.ReactElement {
       <Box
         sx={{
           flex: 1,
-          display: {
-            xs: currentView === 'list' ? 'flex' : 'none',
-            md: 'flex',
+          display: 'flex',
+          position: { xs: 'absolute', md: 'relative' },
+          top: { xs: '56px', sm: '64px', md: 'auto' },
+          left: { xs: 0, md: 'auto' },
+          width: { xs: '100%', md: 'auto' },
+          visibility: {
+            xs: currentView === 'list' ? 'visible' : 'hidden',
+            md: 'visible',
+          },
+          pointerEvents: {
+            xs: currentView === 'list' ? 'auto' : 'none',
+            md: 'auto',
           },
           flexDirection: 'column',
           px: { xs: 0, md: 4 }, // No padding on mobile, flush to edges
+          minHeight: 0,
+          minWidth: 0,
           pt: { xs: 0, md: 2 },
           pb: 2,
           overflowY: 'hidden',
-          height: '100%',
+          height: {
+            xs: 'calc(100% - 56px)',
+            sm: 'calc(100% - 64px)',
+            md: '100%',
+          },
         }}
       >
         <Box
@@ -340,6 +363,7 @@ export default function BrowsePage(): React.ReactElement {
             top: 0,
             backgroundColor: 'background.paper',
             zIndex: 10,
+            flexShrink: 0,
           }}
         >
           <Typography
@@ -374,16 +398,21 @@ export default function BrowsePage(): React.ReactElement {
           onRetry={fetchFridges}
           loadingView={<FridgeListSkeleton />}
         >
-          <Box sx={{ flex: 1, overflowY: 'auto', px: { xs: 2, md: 0 } }}>
+          <Box
+            sx={{
+              flex: 1,
+              minHeight: 0,
+              overflow: 'hidden',
+              px: { xs: 2, md: 0 },
+            }}
+          >
             {isSearching ? (
               <FridgeListSkeleton />
             ) : (
               <FridgeList
                 fridges={filteredFridges}
-                onFridgeSelect={(id) => {
-                  setSelectedFridgeId(id);
-                  setCurrentView('map');
-                }}
+                onFridgeSelect={handleFridgeSelect}
+                resetKey={listResetKey}
               />
             )}
           </Box>
