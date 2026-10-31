@@ -20,6 +20,9 @@ const transformFridge = (apiFridge: ApiFridge): Fridge => {
   const { latestFridgeReport, ...rest } = apiFridge;
   return {
     ...rest,
+    maintainer: rest.maintainer ?? {},
+    notes: rest.notes ?? undefined,
+    photoUrl: rest.photoUrl ?? undefined,
     report: latestFridgeReport || null,
   };
 };

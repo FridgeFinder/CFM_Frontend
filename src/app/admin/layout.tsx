@@ -24,6 +24,11 @@ import { designColor } from 'theme/palette';
 
 const adminDashboardOptions = [
   {
+    label: 'Fridges',
+    href: '/admin/fridges',
+    icon: KitchenOutlinedIcon,
+  },
+  {
     label: 'Add Fridge',
     href: '/admin/add-fridge',
     icon: AddLocationAltOutlinedIcon,
