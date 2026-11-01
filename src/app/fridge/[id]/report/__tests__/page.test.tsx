@@ -1,6 +1,7 @@
 import React from 'react';
 import { render, screen, waitFor, act } from '@testing-library/react';
 import { useParams, useSearchParams } from 'next/navigation';
+import FridgeReportPage from '../page';
 
 jest.mock('next/navigation', () => ({
   useParams: jest.fn(),
@@ -9,6 +10,9 @@ jest.mock('next/navigation', () => ({
 
 const mockInvalidate = jest.fn();
 const mockUpdateFridgeReport = jest.fn();
+let mockIsAdmin = false;
+let mockUser: { uid: string; getIdToken: () => Promise<string> } | null = null;
+let mockUserProfile: { userType: string } | null = null;
 jest.mock('store/useFridgeStore', () => ({
   useFridgeStore: (
     selector: (s: {
@@ -27,11 +31,13 @@ jest.mock('store/useAuthStore', () => ({
     selector: (s: {
       user: { uid: string; getIdToken: () => Promise<string> } | null;
       userProfile: { userType: string } | null;
+      isAdmin: boolean;
     }) => unknown
   ) =>
     selector({
-      user: null,
-      userProfile: null,
+      user: mockUser,
+      userProfile: mockUserProfile,
+      isAdmin: mockIsAdmin,
     }),
   updateCachedUserProfile: jest.fn(),
 }));
@@ -43,13 +49,15 @@ jest.mock('features/fridge-management', () => ({
     fridgeName,
     cancelTo,
     onSubmit,
+    isAdmin,
   }: {
     fridgeId: string;
     fridgeName?: string;
     cancelTo?: string;
     onSubmit: (data: unknown) => void;
+    isAdmin: boolean;
   }) => (
-    <div data-testid="report-form">
+    <div data-testid="report-form" data-is-admin={isAdmin}>
       <span data-testid="fridge-id">{fridgeId}</span>
       <span data-testid="fridge-name">{fridgeName}</span>
       <span data-testid="cancel-to">{cancelTo}</span>
@@ -86,11 +94,6 @@ jest.mock('components/ui', () => ({
 const mockFetch = jest.fn();
 (globalThis as { fetch: jest.Mock }).fetch = mockFetch;
 
-// Import after mocks are in place so fetch is always defined.
-// eslint-disable-next-line @typescript-eslint/no-var-requires
-const { default: FridgeReportPage } =
-  require('../page') as typeof import('../page');
-
 const mockUseParams = useParams as jest.Mock;
 const mockUseSearchParams = useSearchParams as jest.Mock;
 
@@ -100,6 +103,9 @@ const mockSearchParams = (params: Record<string, string | null>) => ({
 
 beforeEach(() => {
   jest.clearAllMocks();
+  mockIsAdmin = false;
+  mockUser = null;
+  mockUserProfile = null;
   (globalThis as { fetch: jest.Mock }).fetch = mockFetch;
   mockUseParams.mockReturnValue({ id: 'fridge-42' });
   mockUseSearchParams.mockReturnValue(mockSearchParams({}));
@@ -110,6 +116,15 @@ describe('initial render — Form state', () => {
     render(<FridgeReportPage />);
     expect(screen.getByTestId('report-form')).toBeInTheDocument();
     expect(screen.getByTestId('fridge-id')).toHaveTextContent('fridge-42');
+  });
+
+  it('passes admin status to ReportForm', () => {
+    mockIsAdmin = true;
+    render(<FridgeReportPage />);
+    expect(screen.getByTestId('report-form')).toHaveAttribute(
+      'data-is-admin',
+      'true'
+    );
   });
 
   it('passes fridgeName from the "name" search param', () => {
@@ -240,20 +255,8 @@ describe('form submission — success', () => {
   it('promotes Neighbor users to Volunteer after a successful report', async () => {
     process.env.NEXT_PUBLIC_USERS_API_URL = 'https://users.example.com';
     const getIdToken = jest.fn().mockResolvedValue('id-token-abc');
-    jest
-      .spyOn(require('store/useAuthStore'), 'useAuthStore')
-      .mockImplementation(
-        (
-          selector: (s: {
-            user: { uid: string; getIdToken: () => Promise<string> } | null;
-            userProfile: { userType: string } | null;
-          }) => unknown
-        ) =>
-          selector({
-            user: { uid: 'user-123', getIdToken },
-            userProfile: { userType: 'Neighbor' },
-          })
-      );
+    mockUser = { uid: 'user-123', getIdToken };
+    mockUserProfile = { userType: 'Neighbor' };
 
     render(<FridgeReportPage />);
     screen.getByRole('button', { name: 'submit' }).click();
@@ -276,20 +279,8 @@ describe('form submission — success', () => {
   it('does not promote users when userType is not Neighbor', async () => {
     process.env.NEXT_PUBLIC_USERS_API_URL = 'https://users.example.com';
     const getIdToken = jest.fn().mockResolvedValue('id-token-abc');
-    jest
-      .spyOn(require('store/useAuthStore'), 'useAuthStore')
-      .mockImplementation(
-        (
-          selector: (s: {
-            user: { uid: string; getIdToken: () => Promise<string> } | null;
-            userProfile: { userType: string } | null;
-          }) => unknown
-        ) =>
-          selector({
-            user: { uid: 'user-123', getIdToken },
-            userProfile: { userType: 'Volunteer' },
-          })
-      );
+    mockUser = { uid: 'user-123', getIdToken };
+    mockUserProfile = { userType: 'Volunteer' };
 
     render(<FridgeReportPage />);
     screen.getByRole('button', { name: 'submit' }).click();

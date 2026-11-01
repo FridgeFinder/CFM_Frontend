@@ -23,6 +23,7 @@ export default function FridgeReportPage(): React.ReactElement {
   const updateFridgeReport = useFridgeStore((s) => s.updateFridgeReport);
   const user = useAuthStore((s) => s.user);
   const userProfile = useAuthStore((s) => s.userProfile);
+  const isAdmin = useAuthStore((s) => s.isAdmin);
   const params = useParams();
   const searchParams = useSearchParams();
   const fridgeId = (params?.id ?? '') as string;
@@ -82,6 +83,7 @@ export default function FridgeReportPage(): React.ReactElement {
             fridgeName={fridgeName}
             onSubmit={handleSubmit}
             cancelTo={cancelTo}
+            isAdmin={isAdmin}
           />
         );
       case DisplayStatus.Success:

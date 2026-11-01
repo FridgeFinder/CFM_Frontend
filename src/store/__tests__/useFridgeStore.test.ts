@@ -24,7 +24,13 @@ const mockApiFridge: ApiFridge = {
 };
 
 // The transformed shape stored in state (latestFridgeReport → report)
-const mockFridge: Fridge = { ...mockApiFridge, report: null };
+const mockFridge: Fridge = {
+  ...mockApiFridge,
+  maintainer: {},
+  notes: undefined,
+  photoUrl: undefined,
+  report: null,
+};
 
 const INITIAL_STATE = {
   fridges: [] as Fridge[],
@@ -43,6 +49,18 @@ beforeEach(() => {
 // ---------------------------------------------------------------------------
 
 describe('fetchFridges — basic behaviour', () => {
+  it('normalizes cleared nullable API fields for public fridge consumers', async () => {
+    mockGetFridges.mockResolvedValueOnce([
+      { ...mockApiFridge, maintainer: null, notes: null, photoUrl: null },
+    ]);
+    await useFridgeStore.getState().fetchFridges();
+    expect(useFridgeStore.getState().fridges[0]).toMatchObject({
+      maintainer: {},
+      notes: undefined,
+      photoUrl: undefined,
+    });
+  });
+
   it('shows loading skeleton when there are no cached fridges', async () => {
     let resolveFirst!: (value: ApiFridge[]) => void;
     mockGetFridges.mockReturnValueOnce(

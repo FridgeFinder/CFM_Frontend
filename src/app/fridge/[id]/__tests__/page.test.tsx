@@ -14,18 +14,14 @@ jest.mock('next/navigation', () => ({
 jest.mock('features/fridge-details', () => ({
   FridgeInformation: ({
     fridge,
-    fridgeReportSection,
   }: {
-    fridge: { id: string; name: string };
-    fridgeReportSection?: React.ReactNode;
+    fridge: { id: string; name: string; report: unknown };
   }) => (
     <div data-testid="fridge-information">
       <span data-testid="fridge-name">{fridge.name}</span>
-      {fridgeReportSection}
+      <span data-testid="fridge-id">{fridge.id}</span>
+      <span data-testid="initial-report">{JSON.stringify(fridge.report)}</span>
     </div>
-  ),
-  FridgeReportSection: ({ fridgeId }: { fridgeId: string }) => (
-    <div data-testid="report-section" data-fridge-id={fridgeId} />
   ),
 }));
 
@@ -75,7 +71,7 @@ describe('FridgePage — happy path', () => {
     expect(getByTestId('fridge-name')).toHaveTextContent('The Green Fridge');
   });
 
-  it('passes report as null when the report endpoint returns no data', async () => {
+  it('passes metadata without a cached report so the client loads the current condition', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: async () => makeFridgeResponse(),
@@ -87,10 +83,8 @@ describe('FridgePage — happy path', () => {
     });
     const { getByTestId } = render(jsx);
 
-    expect(getByTestId('report-section')).toHaveAttribute(
-      'data-fridge-id',
-      'fridge-42'
-    );
+    expect(getByTestId('fridge-id')).toHaveTextContent('fridge-42');
+    expect(getByTestId('initial-report')).toHaveTextContent('null');
   });
 
   it('fetches from the correct URL', async () => {

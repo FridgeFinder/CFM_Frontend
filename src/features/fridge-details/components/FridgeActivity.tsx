@@ -32,6 +32,7 @@ import { designColor, pinColor } from 'theme/palette';
 import type { FlaggedFridgeReportStatus, FridgeReport } from 'types/domain';
 import { ButtonLink, SuccessToast } from 'components/ui';
 import { FridgeReportImage } from './FridgeReportImage';
+import { GhostUpdatesNotice } from './GhostUpdatesNotice';
 
 interface ActivityReport extends FridgeReport {
   userId?: string;
@@ -501,10 +502,14 @@ export function FridgeActivity({
   fridgeId,
   fridgeName,
   isActive = true,
+  canUpdate = true,
+  isGhost = false,
 }: {
   fridgeId: string;
   fridgeName: string;
   isActive?: boolean;
+  canUpdate?: boolean;
+  isGhost?: boolean;
 }): React.ReactElement | null {
   const [reports, setReports] = useState<ActivityReport[]>([]);
   const [nextToken, setNextToken] = useState<string | null>(null);
@@ -678,38 +683,44 @@ export function FridgeActivity({
             height={92}
           />
           <Typography color={designColor.secondaryText} textAlign="center">
-            No more past activity. Add a new update!
+            {canUpdate
+              ? 'No more past activity. Add a new update!'
+              : 'No more past activity.'}
           </Typography>
           <Box sx={{ width: '100%', pt: 0.5 }}>
-            <ButtonLink
-              aria-label="Click to report the status of the fridge"
-              variant="contained"
-              to={`/fridge/${fridgeId}/report?from=${encodeURIComponent(`/fridge/${fridgeId}`)}&name=${encodeURIComponent(fridgeName)}`}
-              title="Update Status"
-              startIcon={
-                <EditIcon sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
-              }
-              sx={{
-                width: { xs: '96%', md: 'calc(100% - 16px)' },
-                mx: 'auto',
-                borderRadius: '999px',
-                fontWeight: 700,
-                fontSize: { xs: '0.75rem', md: '1rem' },
-                lineHeight: { xs: '1rem', md: '1.25rem' },
-                textTransform: 'uppercase',
-                backgroundColor: designColor.blue.dark,
-                border: `2px solid ${designColor.blue.dark}`,
-                minHeight: { xs: 40, md: 44 },
-                '&:hover': {
-                  opacity: 0.9,
+            {isGhost ? (
+              <GhostUpdatesNotice />
+            ) : canUpdate ? (
+              <ButtonLink
+                aria-label="Click to report the status of the fridge"
+                variant="contained"
+                to={`/fridge/${fridgeId}/report?from=${encodeURIComponent(`/fridge/${fridgeId}`)}&name=${encodeURIComponent(fridgeName)}`}
+                title="Update Status"
+                startIcon={
+                  <EditIcon sx={{ fontSize: { xs: '1rem', md: '1.25rem' } }} />
+                }
+                sx={{
+                  width: { xs: '96%', md: 'calc(100% - 16px)' },
+                  mx: 'auto',
+                  borderRadius: '999px',
+                  fontWeight: 700,
+                  fontSize: { xs: '0.75rem', md: '1rem' },
+                  lineHeight: { xs: '1rem', md: '1.25rem' },
+                  textTransform: 'uppercase',
                   backgroundColor: designColor.blue.dark,
-                },
-                display: 'flex',
-                gap: { xs: '6px', md: '8px' },
-                py: { xs: 1.25, md: 1.125 },
-                px: { xs: 0.75, md: 1.25 },
-              }}
-            />
+                  border: `2px solid ${designColor.blue.dark}`,
+                  minHeight: { xs: 40, md: 44 },
+                  '&:hover': {
+                    opacity: 0.9,
+                    backgroundColor: designColor.blue.dark,
+                  },
+                  display: 'flex',
+                  gap: { xs: '6px', md: '8px' },
+                  py: { xs: 1.25, md: 1.125 },
+                  px: { xs: 0.75, md: 1.25 },
+                }}
+              />
+            ) : null}
           </Box>
         </Stack>
       )}

@@ -1,4 +1,4 @@
-import { ApiFridge, FridgeReport } from 'types/domain';
+import { ApiFridge, FridgePatch, FridgeReport } from 'types/domain';
 
 // Use an empty base URL by default so fetches are relative to the origin.
 // Next.js config will automatically proxy /v1 to the NEXT_PUBLIC_FF_API_URL or json-server.
@@ -46,5 +46,11 @@ async function request<T>(
 
 export const apiClient = {
   getFridges: () => request<ApiFridge[]>('/v1/fridges/'),
+  patchFridge: (id: string, patch: FridgePatch, idToken: string) =>
+    request<ApiFridge>(`/v1/fridges/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { Authorization: `Bearer ${idToken}` },
+      body: JSON.stringify(patch),
+    }),
   getReports: () => request<FridgeReport[]>('/v1/reports/'),
 };

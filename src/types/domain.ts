@@ -6,9 +6,13 @@ export interface Location {
   geoLat: number;
   geoLng: number;
   name?: string;
+  country?: string;
 }
 
 export interface Maintainer {
+  name?: string;
+  organization?: string;
+  phone?: string;
   instagram?: string;
   website?: string;
   email?: string;
@@ -43,8 +47,22 @@ export interface Fridge {
   report: FridgeReport | null;
 }
 
-export interface ApiFridge extends Omit<Fridge, 'report'> {
+export interface ApiFridge extends Omit<
+  Fridge,
+  'report' | 'maintainer' | 'notes' | 'photoUrl'
+> {
+  maintainer: Maintainer | null;
+  notes?: string | null;
+  photoUrl?: string | null;
   latestFridgeReport?: FridgeReport;
+}
+
+export interface FridgePatch {
+  name?: string;
+  location?: Location;
+  maintainer?: Maintainer | null;
+  notes?: string | null;
+  photoUrl?: string | null;
 }
 
 export type AppStatus = 'idle' | 'loading' | 'success' | 'error' | 'empty';
