@@ -331,6 +331,7 @@ export default function BrowsePage(): React.ReactElement {
           top: { xs: '56px', sm: '64px', md: 'auto' },
           left: { xs: 0, md: 'auto' },
           width: { xs: '100%', md: 'auto' },
+          maxWidth: { md: 450 },
           visibility: {
             xs: currentView === 'list' ? 'visible' : 'hidden',
             md: 'visible',
