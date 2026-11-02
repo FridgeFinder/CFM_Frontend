@@ -17,6 +17,7 @@ describe('FooterWrapper', () => {
   it.each([
     ['/admin'],
     ['/browse'],
+    ['/browse/buffalo'],
     ['/auth/login'],
     ['/auth/callback'],
     ['/user/notifications'],
@@ -50,6 +51,12 @@ describe('FooterWrapper', () => {
 
     const { getByTestId } = render(<FooterWrapper />);
 
+    expect(getByTestId('page-footer')).toBeInTheDocument();
+  });
+
+  it('does not treat unrelated path prefixes as browse routes', () => {
+    mockUsePathname.mockReturnValue('/browse-guide');
+    const { getByTestId } = render(<FooterWrapper />);
     expect(getByTestId('page-footer')).toBeInTheDocument();
   });
 });

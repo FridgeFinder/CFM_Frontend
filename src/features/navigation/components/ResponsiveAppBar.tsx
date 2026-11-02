@@ -229,7 +229,10 @@ function MenuDesktop({
           icon={item.icon}
           title={item.title}
           link={item.link}
-          isActive={pathname === item.link}
+          isActive={
+            pathname === item.link ||
+            (item.link === '/browse' && !!pathname?.startsWith('/browse/'))
+          }
         />
       ))}
       {isAuthenticated && (
@@ -379,7 +382,10 @@ function MenuMobile({
             key={title}
             label={title}
             link={link}
-            isActive={pathname === link}
+            isActive={
+              pathname === link ||
+              (link === '/browse' && !!pathname?.startsWith('/browse/'))
+            }
             icon={
               <Box sx={{ ...iconCircleBaseSx, width: '48px', height: '48px' }}>
                 <Icon {...sxMobileIcon} />
