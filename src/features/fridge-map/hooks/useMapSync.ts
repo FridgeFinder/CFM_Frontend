@@ -7,6 +7,7 @@ import { useMapStore } from 'store/useMapStore';
 
 interface UseMapSyncProps {
   fridges: Fridge[];
+  autoRecenter?: boolean;
 }
 
 function createUserIcon(heading: number | null): L.DivIcon {
@@ -33,7 +34,7 @@ function createUserIcon(heading: number | null): L.DivIcon {
   });
 }
 
-export function useMapSync({ fridges }: UseMapSyncProps) {
+export function useMapSync({ fridges, autoRecenter = true }: UseMapSyncProps) {
   const map = useMap();
   const userMarkerRef = useRef<L.Marker | null>(null);
   const userAccuracyRef = useRef<L.Circle | null>(null);
@@ -106,8 +107,8 @@ export function useMapSync({ fridges }: UseMapSyncProps) {
       if (isFirstLocationFound.current) {
         isFirstLocationFound.current = false;
 
-        // If they already have a selected fridge, let that logic handle the pan
-        if (selectedFridgeIdRef.current) return;
+        // City entry and explicit fridge selections take priority over automatic panning.
+        if (!autoRecenter || selectedFridgeIdRef.current) return;
 
         const defaultCenter: [number, number] = [40.697759, -73.927282];
         const maxDistMeters = 200000;
@@ -152,7 +153,7 @@ export function useMapSync({ fridges }: UseMapSyncProps) {
         }
       }
     },
-    [map, setUserLocation]
+    [map, setUserLocation, autoRecenter]
   );
 
   useEffect(() => {
