@@ -15,6 +15,7 @@ import { useMapStore } from 'store/useMapStore';
 
 interface MapProps {
   fridges: Fridge[];
+  initialCenter?: [number, number];
   onMarkerClick?: (id: string) => void;
   mapRef?: React.RefObject<import('leaflet').Map | null>;
   hideLegend?: boolean;
@@ -40,10 +41,11 @@ const defaultZoom = 13.2;
 
 interface MapControllerProps {
   fridges: Fridge[];
+  autoRecenter: boolean;
 }
 
-function MapController({ fridges }: MapControllerProps): null {
-  const { locateUser } = useMapSync({ fridges });
+function MapController({ fridges, autoRecenter }: MapControllerProps): null {
+  const { locateUser } = useMapSync({ fridges, autoRecenter });
   const setCenter = useMapStore((state) => state.setCenter);
   const setZoom = useMapStore((state) => state.setZoom);
   const map = useMap();
@@ -78,6 +80,7 @@ function MapController({ fridges }: MapControllerProps): null {
 
 export function MapContainer({
   fridges,
+  initialCenter: centerOverride,
   onMarkerClick,
   mapRef,
   hideLegend = false,
@@ -103,15 +106,16 @@ export function MapContainer({
   return (
     <Box sx={{ height: '100%', width: '100%', position: 'relative' }}>
       <LeafletMapContainer
+        key={centerOverride?.join(',') ?? 'default'}
         style={{ height: '100%' }}
-        center={initialCenter || defaultMapCenter}
+        center={centerOverride ?? initialCenter ?? defaultMapCenter}
         zoom={initialZoom || defaultZoom}
         minZoom={1}
         scrollWheelZoom={true}
         zoomControl={false}
       >
         {mapRef && <MapRefCapture mapRef={mapRef} />}
-        <MapController fridges={fridges} />
+        <MapController fridges={fridges} autoRecenter={!centerOverride} />
         <TileLayer
           attribution="&copy; Fridge Finder"
           url={`https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=${lng}`}

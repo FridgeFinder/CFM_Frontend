@@ -28,6 +28,28 @@ Fridge Finder is based out of Brooklyn, New York. Our goal is to make it easy fo
 </p>
 <h3 align="right">❤ Thank you for all your hard work</h3>
 
+## City browse links
+
+`/browse/buffalo` opens the existing browse view centered at
+`42.92771778130319, -78.85146118573536`.
+`/browse/detroit` centers at `42.371783, -83.108435`.
+`/browse/omaha` centers at `41.2680653620639, -95.93746886575032`.
+A city link overrides the saved map
+center and automatic location-based recentering on entry, even if location
+permission is granted. Location tracking and the "Find my location" button
+still work; users can pan and select fridges normally.
+
+City links reset zoom on each load: Detroit starts at 10 (two levels farther
+out), while Buffalo and Omaha start at the default level (12). Users can zoom
+normally afterward; plain `/browse` still restores the last saved zoom.
+Fridge data, search, and filters are unchanged. The list continues to
+sort by distance from the map center, without restricting results to a city.
+Plain `/browse` keeps its existing behavior. Unknown city slugs redirect there.
+
+To add a city, add its lowercase URL slug and `[latitude, longitude]` tuple to
+[`browseCities`](../src/features/fridge-map/config/browseCities.ts). For example,
+the `buffalo` entry enables `/browse/buffalo`; no additional page is needed.
+
 ## System Requirements
 
 1. [Node](https://nodejs.org/en/)
