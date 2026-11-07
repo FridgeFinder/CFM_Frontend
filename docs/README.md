@@ -46,9 +46,19 @@ Fridge data, search, and filters are unchanged. The list continues to
 sort by distance from the map center, without restricting results to a city.
 Plain `/browse` keeps its existing behavior. Unknown city slugs redirect there.
 
-To add a city, add its lowercase URL slug and `[latitude, longitude]` tuple to
+City pages have unique titles, descriptions, canonical URLs, and social-sharing
+metadata. To add a city, add its lowercase URL slug, display name, state, and
+`[latitude, longitude]` center to
 [`browseCities`](../src/features/fridge-map/config/browseCities.ts). For example,
 the `buffalo` entry enables `/browse/buffalo`; no additional page is needed.
+
+## Page metadata
+
+The homepage and main browse page define their own descriptive titles and
+descriptions. City browse routes retain their city-specific metadata. The
+profile layout sets `Your Profile | Fridge Finder` and `noindex, follow`;
+authentication still controls access to the profile. Metadata changes do not
+alter analytics tracking or rename historical analytics events.
 
 ## System Requirements
 

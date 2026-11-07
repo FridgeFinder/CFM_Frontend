@@ -165,8 +165,8 @@ it('resets the saved center, zoom and stale selection for a city without changin
     id: 'buffalo-fridge',
     location: {
       ...fridge.location,
-      geoLat: browseCities.buffalo[0],
-      geoLng: browseCities.buffalo[1],
+      geoLat: browseCities.buffalo.center[0],
+      geoLng: browseCities.buffalo.center[1],
     },
   };
   jest.mocked(useFridgeStore).mockReturnValue({
@@ -176,10 +176,10 @@ it('resets the saved center, zoom and stale selection for a city without changin
     fetchFridges,
   });
 
-  render(<SharedBrowsePage initialCenter={browseCities.buffalo} />);
+  render(<SharedBrowsePage initialCenter={browseCities.buffalo.center} />);
 
   expect(useMapStore.getState()).toMatchObject({
-    center: browseCities.buffalo,
+    center: browseCities.buffalo.center,
     zoom: 12,
     selectedFridgeId: null,
     userLocation: [40.7, -74],
@@ -196,21 +196,23 @@ it('applies the city center even while fridge data is loading', () => {
     error: null,
     fetchFridges,
   });
-  render(<SharedBrowsePage initialCenter={browseCities.buffalo} />);
-  expect(useMapStore.getState().center).toEqual(browseCities.buffalo);
+  render(<SharedBrowsePage initialCenter={browseCities.buffalo.center} />);
+  expect(useMapStore.getState().center).toEqual(browseCities.buffalo.center);
   expect(screen.getByTestId('map')).toBeInTheDocument();
 });
 
 it('does not reset city panning, zoom or subsequent fridge selection on rerenders', () => {
   const { rerender } = render(
-    <SharedBrowsePage initialCenter={browseCities.buffalo} />
+    <SharedBrowsePage initialCenter={browseCities.buffalo.center} />
   );
   act(() => {
     useMapStore.getState().setCenter([43, -79]);
     useMapStore.getState().setZoom(17);
     useMapStore.getState().setSelectedFridgeId(fridge.id);
   });
-  rerender(<SharedBrowsePage initialCenter={[...browseCities.buffalo]} />);
+  rerender(
+    <SharedBrowsePage initialCenter={[...browseCities.buffalo.center]} />
+  );
   expect(useMapStore.getState().center).toEqual([43, -79]);
   expect(useMapStore.getState().zoom).toBe(17);
   expect(useMapStore.getState().selectedFridgeId).toBe(fridge.id);
@@ -218,35 +220,44 @@ it('does not reset city panning, zoom or subsequent fridge selection on rerender
 
 it('resets zoom again when reloading a city view', () => {
   const { unmount } = render(
-    <SharedBrowsePage initialCenter={browseCities.buffalo} />
+    <SharedBrowsePage initialCenter={browseCities.buffalo.center} />
   );
   act(() => useMapStore.getState().setZoom(18));
   unmount();
-  render(<SharedBrowsePage initialCenter={browseCities.buffalo} />);
+  render(<SharedBrowsePage initialCenter={browseCities.buffalo.center} />);
   expect(useMapStore.getState().zoom).toBe(12);
 });
 
 it('uses Detroit zoom 10 on entry and reload without overriding later zoom changes', () => {
   useMapStore.getState().setZoom(18);
   const { rerender, unmount } = render(
-    <SharedBrowsePage initialCenter={browseCities.detroit} initialZoom={10} />
+    <SharedBrowsePage
+      initialCenter={browseCities.detroit.center}
+      initialZoom={10}
+    />
   );
   expect(useMapStore.getState().zoom).toBe(10);
   act(() => useMapStore.getState().setZoom(14));
   rerender(
-    <SharedBrowsePage initialCenter={browseCities.detroit} initialZoom={10} />
+    <SharedBrowsePage
+      initialCenter={browseCities.detroit.center}
+      initialZoom={10}
+    />
   );
   expect(useMapStore.getState().zoom).toBe(14);
   unmount();
   render(
-    <SharedBrowsePage initialCenter={browseCities.detroit} initialZoom={10} />
+    <SharedBrowsePage
+      initialCenter={browseCities.detroit.center}
+      initialZoom={10}
+    />
   );
   expect(useMapStore.getState().zoom).toBe(10);
 });
 
 it('applies a new initial center when navigating between city views', () => {
   const { rerender } = render(
-    <SharedBrowsePage initialCenter={browseCities.buffalo} />
+    <SharedBrowsePage initialCenter={browseCities.buffalo.center} />
   );
   act(() => useMapStore.getState().setSelectedFridgeId(fridge.id));
   rerender(<SharedBrowsePage initialCenter={[41, -75]} />);
@@ -270,7 +281,7 @@ it('preserves the saved view and selection on plain browse', () => {
 
 it('allows explicit recentering to a known user location on a city link', () => {
   useMapStore.getState().setUserLocation([40.7, -74]);
-  render(<SharedBrowsePage initialCenter={browseCities.buffalo} />);
+  render(<SharedBrowsePage initialCenter={browseCities.buffalo.center} />);
   fireEvent.click(screen.getByRole('button', { name: 'Find my location' }));
   expect(mockMap.flyTo).toHaveBeenCalledWith([40.7, -74], 15, {
     animate: true,
@@ -279,7 +290,7 @@ it('allows explicit recentering to a known user location on a city link', () => 
 });
 
 it('allows explicit location requests to move the viewport on a city link', () => {
-  render(<SharedBrowsePage initialCenter={browseCities.buffalo} />);
+  render(<SharedBrowsePage initialCenter={browseCities.buffalo.center} />);
   fireEvent.click(screen.getByRole('button', { name: 'Find my location' }));
   expect(mockMap.locate).toHaveBeenCalledWith(
     expect.objectContaining({ watch: true, setView: true, maxZoom: 15 })

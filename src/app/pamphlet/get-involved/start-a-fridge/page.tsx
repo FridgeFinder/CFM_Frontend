@@ -38,12 +38,6 @@ const pageContent = {
         'Your team can scout for a location to host a community fridge. A location host would provide your fridge with electricity. Create an agreement on how everyone will dispose of trash at the location, including cardboard boxes that carry food donations. The best fridge hosts are supportive, helpful, and reliable. Examples include restaurants, cafes, bars, small businesses, and churches.',
         'Once you have a location confirmed, you can find a refrigerator. Some people raise money to buy a new fridge, but it is possible to find a free second-use fridge online or by asking us.',
       ],
-      button: {
-        title: 'Request A Fridge',
-        to: '/contact?subject=Fridge%20Request',
-        'aria-label': 'Request a fridge',
-        variant: 'contained' as const,
-      },
     },
     {
       variant: 'h2' as const,
@@ -51,12 +45,6 @@ const pageContent = {
       body: [
         'To keep your fridge protected from outdoor elements like rain and snow, we strongly recommend building a weather resistant structure to protect your refrigerator. Fridge shelters are typically built from wood, which can be purchased or secured from donated materials. You can also do outreach to connect with volunteer carpenters.',
       ],
-      button: {
-        title: 'Get Construction Support',
-        to: '/contact?subject=Construction%20Support%20Request',
-        'aria-label': 'Request construction support',
-        variant: 'contained' as const,
-      },
     },
     {
       variant: 'h2' as const,
@@ -78,9 +66,9 @@ const pageContent = {
       title: 'Ready to start a fridge?',
       body: ['Contact us for more information on sourcing a fridge.'],
       button: {
-        title: 'Request A Fridge',
-        to: '/contact?subject=Fridge%20Request',
-        'aria-label': 'Request a fridge',
+        title: 'Contact Us',
+        to: '/contact?subject=Fridge%20Sourcing%20Support',
+        'aria-label': 'Contact us',
         variant: 'contained' as const,
       },
     },

@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
-import CityBrowsePage from '../page';
+import CityBrowsePage, { generateMetadata } from '../page';
 import BrowsePage from 'features/fridge-map/components/BrowsePage';
-import { getBrowseCityCenter } from 'features/fridge-map/config/browseCities';
+import { getBrowseCity } from 'features/fridge-map/config/browseCities';
 
 jest.mock('next/navigation', () => ({
   redirect: jest.fn(() => {
@@ -14,20 +14,50 @@ jest.mock('features/fridge-map/components/BrowsePage', () => ({
   default: jest.fn(),
 }));
 
-it.each([
-  ['buffalo', [42.92771778130319, -78.85146118573536]],
-  ['detroit', [42.371783, -83.108435]],
-  ['omaha', [41.2680653620639, -95.93746886575032]],
-] as const)(
-  'renders the shared browse view with the exact %s coordinates',
-  async (city, center) => {
+it.each(['buffalo', 'detroit', 'kingston', 'omaha'])(
+  'renders the shared browse view with the %s coordinates',
+  async (citySlug) => {
+    const city = getBrowseCity(citySlug)!;
     const page = await CityBrowsePage({
-      params: Promise.resolve({ city }),
+      params: Promise.resolve({ city: citySlug }),
     });
     expect(page.type).toBe(BrowsePage);
     expect(page.props).toEqual({
-      initialCenter: center,
-      initialZoom: city === 'detroit' ? 10 : undefined,
+      initialCenter: city.center,
+      initialZoom:
+        citySlug === 'detroit' ? 10 : citySlug === 'kingston' ? 14 : undefined,
+    });
+  }
+);
+
+it('uses the supplied coordinates for Kingston', () => {
+  expect(getBrowseCity('kingston')?.center).toEqual([41.922835, -74.007931]);
+});
+
+it('uses the supplied coordinates for Omaha', () => {
+  expect(getBrowseCity('omaha')?.center).toEqual([41.273211, -95.954488]);
+});
+
+it.each([
+  ['buffalo', 'Buffalo', 'New York'],
+  ['detroit', 'Detroit', 'Michigan'],
+  ['kingston', 'Kingston', 'New York'],
+  ['omaha', 'Omaha', 'Nebraska'],
+])(
+  'generates accurate canonical and social metadata for %s',
+  async (citySlug, cityName, state) => {
+    const title = `${cityName} Community Fridge Map | Fridge Finder`;
+    const description = `Explore community fridge locations around ${cityName}, ${state} on Fridge Finder's interactive map.`;
+    const url = `https://fridgefinder.app/browse/${citySlug}`;
+
+    await expect(
+      generateMetadata({ params: Promise.resolve({ city: citySlug }) })
+    ).resolves.toEqual({
+      title,
+      description,
+      alternates: { canonical: url },
+      openGraph: { type: 'website', url, title, description },
+      twitter: { card: 'summary', title, description },
     });
   }
 );
@@ -35,10 +65,17 @@ it.each([
 it.each(['unknown-city', 'toString', '__proto__', 'constructor'])(
   'redirects an unrecognized city %s to plain browse',
   async (city) => {
-    expect(getBrowseCityCenter(city)).toBeUndefined();
+    expect(getBrowseCity(city)).toBeUndefined();
     await expect(
       CityBrowsePage({ params: Promise.resolve({ city }) })
     ).rejects.toThrow('NEXT_REDIRECT');
     expect(redirect).toHaveBeenCalledWith('/browse');
   }
 );
+
+it('redirects unknown city metadata to plain browse', async () => {
+  await expect(
+    generateMetadata({ params: Promise.resolve({ city: 'unknown-city' }) })
+  ).rejects.toThrow('NEXT_REDIRECT');
+  expect(redirect).toHaveBeenCalledWith('/browse');
+});

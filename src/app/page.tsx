@@ -1,9 +1,16 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import NextLink from 'next/link';
 import { Grid, Typography, Box } from '@mui/material';
 import { PageHero } from 'components/layout';
 import { NewUserWelcomeFlowGate, ParagraphCard } from 'features/marketing';
 import { designColor } from 'theme/palette';
+
+export const metadata: Metadata = {
+  title: 'Fridge Finder | Find Community Fridges Near You',
+  description:
+    'Find community fridges near you, explore the map, donate food or get involved with your local community.',
+};
 
 const darkButtonSx = {
   '&.MuiButton-outlined': {

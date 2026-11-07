@@ -37,9 +37,11 @@ beforeEach(() => {
 afterEach(() => jest.useRealTimers());
 
 it('starts at the city center with saved zoom and keeps location tracking', () => {
-  render(<MapContainer fridges={[]} initialCenter={browseCities.buffalo} />);
+  render(
+    <MapContainer fridges={[]} initialCenter={browseCities.buffalo.center} />
+  );
   expect(mockLeafletContainer).toHaveBeenLastCalledWith(
-    expect.objectContaining({ center: browseCities.buffalo, zoom: 16 })
+    expect.objectContaining({ center: browseCities.buffalo.center, zoom: 16 })
   );
   expect(useMapSync).toHaveBeenLastCalledWith({
     fridges: [],
@@ -61,7 +63,7 @@ it('retains the saved center and automatic recentering without a city override',
 
 it('persists user panning and zoom without restarting location tracking', () => {
   const { rerender } = render(
-    <MapContainer fridges={[]} initialCenter={browseCities.buffalo} />
+    <MapContainer fridges={[]} initialCenter={browseCities.buffalo.center} />
   );
   const handler = mockMap.on.mock.calls.find(
     ([event]) => event === 'moveend'
@@ -70,7 +72,9 @@ it('persists user panning and zoom without restarting location tracking', () => 
     handler();
     jest.advanceTimersByTime(500);
   });
-  rerender(<MapContainer fridges={[]} initialCenter={browseCities.buffalo} />);
+  rerender(
+    <MapContainer fridges={[]} initialCenter={browseCities.buffalo.center} />
+  );
   expect(useMapStore.getState()).toMatchObject({
     center: [43, -79],
     zoom: 15,
