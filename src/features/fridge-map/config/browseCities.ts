@@ -23,7 +23,7 @@ export const browseCities = {
   omaha: {
     name: 'Omaha',
     state: 'Nebraska',
-    center: [41.2680653620639, -95.93746886575032],
+    center: [41.273211, -95.954488],
   },
 } satisfies Record<string, BrowseCity>;
 
