@@ -34,6 +34,10 @@ it('uses the supplied coordinates for Kingston', () => {
   expect(getBrowseCity('kingston')?.center).toEqual([41.922835, -74.007931]);
 });
 
+it('uses the supplied coordinates for Omaha', () => {
+  expect(getBrowseCity('omaha')?.center).toEqual([41.273211, -95.954488]);
+});
+
 it.each([
   ['buffalo', 'Buffalo', 'New York'],
   ['detroit', 'Detroit', 'Michigan'],
