@@ -15,6 +15,11 @@ export const browseCities = {
     state: 'Michigan',
     center: [42.371783, -83.108435],
   },
+  kingston: {
+    name: 'Kingston',
+    state: 'New York',
+    center: [41.922835, -74.007931],
+  },
   omaha: {
     name: 'Omaha',
     state: 'Nebraska',
