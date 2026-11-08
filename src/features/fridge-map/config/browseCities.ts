@@ -25,6 +25,11 @@ export const browseCities = {
     state: 'Nebraska',
     center: [41.273211, -95.954488],
   },
+  pittsburgh: {
+    name: 'Pittsburgh',
+    state: 'Pennsylvania',
+    center: [40.455346, -79.956382],
+  },
 } satisfies Record<string, BrowseCity>;
 
 export function getBrowseCity(city: string): BrowseCity | undefined {
