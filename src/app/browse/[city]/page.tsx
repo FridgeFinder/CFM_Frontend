@@ -54,7 +54,13 @@ export default async function CityBrowsePage({
       key={citySlug}
       initialCenter={city.center}
       initialZoom={
-        citySlug === 'detroit' ? 10 : citySlug === 'kingston' ? 14 : undefined
+        citySlug === 'detroit'
+          ? 10
+          : citySlug === 'kingston'
+            ? 14
+            : citySlug === 'pittsburgh'
+              ? 11
+              : undefined
       }
     />
   );

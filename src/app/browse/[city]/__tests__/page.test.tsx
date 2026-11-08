@@ -14,7 +14,7 @@ jest.mock('features/fridge-map/components/BrowsePage', () => ({
   default: jest.fn(),
 }));
 
-it.each(['buffalo', 'detroit', 'kingston', 'omaha'])(
+it.each(['buffalo', 'detroit', 'kingston', 'omaha', 'pittsburgh'])(
   'renders the shared browse view with the %s coordinates',
   async (citySlug) => {
     const city = getBrowseCity(citySlug)!;
@@ -25,7 +25,13 @@ it.each(['buffalo', 'detroit', 'kingston', 'omaha'])(
     expect(page.props).toEqual({
       initialCenter: city.center,
       initialZoom:
-        citySlug === 'detroit' ? 10 : citySlug === 'kingston' ? 14 : undefined,
+        citySlug === 'detroit'
+          ? 10
+          : citySlug === 'kingston'
+            ? 14
+            : citySlug === 'pittsburgh'
+              ? 11
+              : undefined,
     });
   }
 );
@@ -38,11 +44,16 @@ it('uses the supplied coordinates for Omaha', () => {
   expect(getBrowseCity('omaha')?.center).toEqual([41.273211, -95.954488]);
 });
 
+it('uses the supplied coordinates for Pittsburgh', () => {
+  expect(getBrowseCity('pittsburgh')?.center).toEqual([40.455346, -79.956382]);
+});
+
 it.each([
   ['buffalo', 'Buffalo', 'New York'],
   ['detroit', 'Detroit', 'Michigan'],
   ['kingston', 'Kingston', 'New York'],
   ['omaha', 'Omaha', 'Nebraska'],
+  ['pittsburgh', 'Pittsburgh', 'Pennsylvania'],
 ])(
   'generates accurate canonical and social metadata for %s',
   async (citySlug, cityName, state) => {
