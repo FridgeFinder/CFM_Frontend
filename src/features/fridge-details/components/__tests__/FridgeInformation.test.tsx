@@ -6,7 +6,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { FridgeInformation } from '../FridgeInformation';
+import { FridgeInformation, openGoogleMapsIOS } from '../FridgeInformation';
 import { Fridge } from 'types/domain';
 
 jest.mock('../FollowButton', () => ({
@@ -55,7 +55,43 @@ beforeEach(() => {
   global.fetch = mockFetch;
   jest.spyOn(window, 'scrollTo').mockImplementation(() => {});
 });
-afterEach(() => jest.restoreAllMocks());
+afterEach(() => {
+  jest.useRealTimers();
+  jest.restoreAllMocks();
+});
+
+it('opens Google Maps on iOS and falls back to its HTTPS directions URL', () => {
+  jest.useFakeTimers();
+  const navigateTo = jest.fn();
+
+  openGoogleMapsIOS('123 Main St, Brooklyn, NY 11201', navigateTo);
+
+  expect(navigateTo).toHaveBeenCalledWith(
+    `comgooglemaps://?${new URLSearchParams({
+      daddr: '123 Main St, Brooklyn, NY 11201',
+      directionsmode: 'driving',
+    })}`
+  );
+  act(() => jest.advanceTimersByTime(1500));
+  expect(navigateTo).toHaveBeenLastCalledWith(
+    `https://www.google.com/maps/dir/?${new URLSearchParams({
+      api: '1',
+      destination: '123 Main St, Brooklyn, NY 11201',
+    })}`
+  );
+});
+
+it('cancels the Google Maps web fallback after the page is hidden', () => {
+  jest.useFakeTimers();
+  jest.spyOn(document, 'visibilityState', 'get').mockReturnValue('hidden');
+  const navigateTo = jest.fn();
+
+  openGoogleMapsIOS('123 Main St, Brooklyn, NY 11201', navigateTo);
+  fireEvent(document, new Event('visibilitychange'));
+  act(() => jest.advanceTimersByTime(1500));
+
+  expect(navigateTo).toHaveBeenCalledTimes(1);
+});
 
 it.each([
   [

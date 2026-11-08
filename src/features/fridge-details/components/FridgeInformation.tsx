@@ -426,6 +426,39 @@ function getMapsUrl(provider: MapsProvider, address: string): string {
   })}`;
 }
 
+export function openGoogleMapsIOS(
+  address: string,
+  navigateTo: (url: string) => void = (url) => {
+    window.location.href = url;
+  }
+): () => void {
+  const onVisibilityChange = () => {
+    if (document.visibilityState === 'hidden') cleanup();
+  };
+  const cleanup = () => {
+    window.clearTimeout(fallbackTimeout);
+    document.removeEventListener('visibilitychange', onVisibilityChange);
+    window.removeEventListener('pagehide', cleanup);
+  };
+
+  const appUrl = `comgooglemaps://?${new URLSearchParams({
+    daddr: address,
+    directionsmode: 'driving',
+  })}`;
+  const fallbackTimeout = window.setTimeout(() => {
+    cleanup();
+    if (document.visibilityState === 'visible') {
+      navigateTo(getMapsUrl('google', address));
+    }
+  }, 1500);
+
+  document.addEventListener('visibilitychange', onVisibilityChange);
+  window.addEventListener('pagehide', cleanup, { once: true });
+  navigateTo(appUrl);
+
+  return cleanup;
+}
+
 function subscribeToMapsPlatform(): () => void {
   return () => {};
 }
@@ -579,7 +612,13 @@ function FridgeContainer({
                 <MenuItem
                   component="a"
                   href={getMapsUrl('google', address)}
-                  onClick={() => setMapsMenuAnchor(null)}
+                  onClick={(event) => {
+                    setMapsMenuAnchor(null);
+                    if (mapsPlatform === 'ios') {
+                      event.preventDefault();
+                      openGoogleMapsIOS(address);
+                    }
+                  }}
                 >
                   Google Maps
                 </MenuItem>
