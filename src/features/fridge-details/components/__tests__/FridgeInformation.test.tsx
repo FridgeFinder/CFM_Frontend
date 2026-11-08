@@ -57,6 +57,83 @@ beforeEach(() => {
 });
 afterEach(() => jest.restoreAllMocks());
 
+it.each([
+  [
+    'iPhone',
+    `https://maps.apple.com/?${new URLSearchParams({
+      daddr: '123 Main St, Brooklyn, NY 11201',
+    })}`,
+    undefined,
+  ],
+  [
+    'Android',
+    `https://www.google.com/maps/dir/?${new URLSearchParams({
+      api: '1',
+      destination: '123 Main St, Brooklyn, NY 11201',
+    })}`,
+    undefined,
+  ],
+  [
+    'desktop',
+    'https://www.google.com/maps/place/123%20Main%20St,%20Brooklyn,%20NY%2011201',
+    '_blank',
+  ],
+])(
+  'uses the preferred directions link for %s',
+  async (userAgent, expectedHref, expectedTarget) => {
+    jest.spyOn(window.navigator, 'userAgent', 'get').mockReturnValue(userAgent);
+    mockFetch.mockResolvedValue({ ok: true, json: async () => [] });
+
+    render(<FridgeInformation fridge={fridge} />);
+
+    const directionsLink = await screen.findByRole('link', {
+      name: 'Click to get directions to the fridge',
+    });
+    await waitFor(() =>
+      expect(directionsLink).toHaveAttribute('href', expectedHref)
+    );
+    if (expectedTarget) {
+      expect(directionsLink).toHaveAttribute('target', expectedTarget);
+    } else {
+      expect(directionsLink).not.toHaveAttribute('target', '_blank');
+    }
+  }
+);
+
+it('offers alternate map apps on mobile', async () => {
+  jest.spyOn(window.navigator, 'userAgent', 'get').mockReturnValue('iPhone');
+  mockFetch.mockResolvedValue({ ok: true, json: async () => [] });
+
+  render(<FridgeInformation fridge={fridge} />);
+
+  fireEvent.click(
+    await screen.findByRole('button', { name: 'Choose another maps app' })
+  );
+
+  expect(
+    await screen.findByRole('menuitem', { name: 'Apple Maps' })
+  ).toHaveAttribute(
+    'href',
+    `https://maps.apple.com/?${new URLSearchParams({
+      daddr: '123 Main St, Brooklyn, NY 11201',
+    })}`
+  );
+  expect(screen.getByRole('menuitem', { name: 'Google Maps' })).toHaveAttribute(
+    'href',
+    `https://www.google.com/maps/dir/?${new URLSearchParams({
+      api: '1',
+      destination: '123 Main St, Brooklyn, NY 11201',
+    })}`
+  );
+  expect(screen.getByRole('menuitem', { name: 'Waze' })).toHaveAttribute(
+    'href',
+    `https://waze.com/ul?${new URLSearchParams({
+      q: '123 Main St, Brooklyn, NY 11201',
+      navigate: 'yes',
+    })}`
+  );
+});
+
 it('replaces both responsive ghost buttons with non-interactive notices from the live report', async () => {
   mockFetch.mockResolvedValue({
     ok: true,

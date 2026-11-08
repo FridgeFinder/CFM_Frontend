@@ -1,12 +1,20 @@
 'use client';
 
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, {
+  useLayoutEffect,
+  useRef,
+  useState,
+  useSyncExternalStore,
+} from 'react';
 import Image from 'next/image';
 import {
   Button,
   Box,
   Divider,
+  IconButton,
   Link,
+  Menu,
+  MenuItem,
   Stack,
   Tab,
   Tabs,
@@ -18,6 +26,7 @@ import {
   ChatBubbleOutlineOutlined as ChatBubbleOutlineOutlinedIcon,
   InfoOutlined as InfoOutlinedIcon,
   Instagram as InstagramIcon,
+  KeyboardArrowDown as ExpandMoreIcon,
   Language as LanguageIcon,
   PlaceOutlined as MapPinIcon,
   Edit as EditIcon,
@@ -383,9 +392,65 @@ interface FridgeContainerProps {
   fridge: Fridge;
 }
 
+type MapsPlatform = 'ios' | 'android' | 'other';
+type MapsProvider = 'apple' | 'google' | 'waze';
+
+function getMapsPlatform(
+  userAgent: string,
+  platform: string,
+  maxTouchPoints: number
+): MapsPlatform {
+  if (
+    /iPhone|iPad|iPod/i.test(userAgent) ||
+    (platform === 'MacIntel' && maxTouchPoints > 1)
+  ) {
+    return 'ios';
+  }
+  if (/Android/i.test(userAgent)) return 'android';
+  return 'other';
+}
+
+function getMapsUrl(provider: MapsProvider, address: string): string {
+  if (provider === 'apple') {
+    return `https://maps.apple.com/?${new URLSearchParams({ daddr: address })}`;
+  }
+  if (provider === 'google') {
+    return `https://www.google.com/maps/dir/?${new URLSearchParams({
+      api: '1',
+      destination: address,
+    })}`;
+  }
+  return `https://waze.com/ul?${new URLSearchParams({
+    q: address,
+    navigate: 'yes',
+  })}`;
+}
+
+function subscribeToMapsPlatform(): () => void {
+  return () => {};
+}
+
+function getMapsPlatformSnapshot(): MapsPlatform {
+  if (typeof navigator === 'undefined') return 'other';
+  return getMapsPlatform(
+    navigator.userAgent,
+    navigator.platform,
+    navigator.maxTouchPoints
+  );
+}
+
 function FridgeContainer({
   fridge,
 }: FridgeContainerProps): React.ReactElement | null {
+  const mapsPlatform = useSyncExternalStore(
+    subscribeToMapsPlatform,
+    getMapsPlatformSnapshot,
+    () => 'other'
+  );
+  const [mapsMenuAnchor, setMapsMenuAnchor] = useState<HTMLElement | null>(
+    null
+  );
+
   if (!fridge) return null;
 
   const {
@@ -396,6 +461,12 @@ function FridgeContainer({
     notes = null,
   } = fridge;
   const address = `${location.street}, ${location.city}, ${location.state} ${location.zip}`;
+  const isMobile = mapsPlatform !== 'other';
+  const preferredMapsProvider: MapsProvider =
+    mapsPlatform === 'ios' ? 'apple' : 'google';
+  const directionsUrl = isMobile
+    ? getMapsUrl(preferredMapsProvider, address)
+    : `https://www.google.com/maps/place/${encodeURI(address)}`;
 
   return (
     <Box sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -430,50 +501,99 @@ function FridgeContainer({
       <Stack direction="row" gap={{ xs: 1.5, md: 2 }}>
         <FollowButton fridgeId={fridge.id} fridgeName={name} />
 
-        <Button
-          component="a"
-          href={encodeURI(`https://www.google.com/maps/place/${address}`)}
-          target="_blank"
-          rel="noopener noreferrer"
-          aria-label="Click to get directions to the fridge"
-          variant="outlined"
-          sx={{
-            flex: 0.84,
-            borderRadius: '999px',
-            fontWeight: 700,
-            fontSize: { xs: '0.75rem', md: '1rem' },
-            lineHeight: { xs: '1rem', md: '1.25rem' },
-            py: { xs: 1.25, md: 1.125 },
-            px: { xs: 0.625, md: 1.125 },
-            minHeight: { xs: 40, md: 44 },
-            border: `2px solid ${designColor.blue.dark}`,
-            color: designColor.blue.dark,
-            whiteSpace: 'nowrap',
-            display: 'flex',
-            minWidth: 0,
-            gap: { xs: '6px', md: '8px' },
-            '& .MuiSvgIcon-root': { color: designColor.blue.dark },
-            '& .directions-label': { color: designColor.blue.dark },
-            '&:hover': {
-              backgroundColor: designColor.blue.dark,
-              color: designColor.white,
-              border: `2px solid ${designColor.blue.dark}`,
-              '& .MuiSvgIcon-root': { color: designColor.white },
-              '& .directions-label': { color: designColor.white },
-            },
-            textTransform: 'uppercase',
-          }}
-        >
-          <MapPinIcon
+        <Box sx={{ flex: 0.84, display: 'flex', gap: 0.5, minWidth: 0 }}>
+          <Button
+            component="a"
+            href={directionsUrl}
+            target={isMobile ? undefined : '_blank'}
+            rel={isMobile ? undefined : 'noopener noreferrer'}
+            aria-label="Click to get directions to the fridge"
+            variant="outlined"
             sx={{
-              fontSize: { xs: '1rem', md: '1.25rem' },
+              flex: 1,
+              borderRadius: '999px',
+              fontWeight: 700,
+              fontSize: { xs: '0.75rem', md: '1rem' },
+              lineHeight: { xs: '1rem', md: '1.25rem' },
+              py: { xs: 1.25, md: 1.125 },
+              px: { xs: 0.625, md: 1.125 },
+              minHeight: { xs: 40, md: 44 },
+              border: `2px solid ${designColor.blue.dark}`,
               color: designColor.blue.dark,
+              whiteSpace: 'nowrap',
+              display: 'flex',
+              minWidth: 0,
+              gap: { xs: '6px', md: '8px' },
+              '& .MuiSvgIcon-root': { color: designColor.blue.dark },
+              '& .directions-label': { color: designColor.blue.dark },
+              '&:hover': {
+                backgroundColor: designColor.blue.dark,
+                color: designColor.white,
+                border: `2px solid ${designColor.blue.dark}`,
+                '& .MuiSvgIcon-root': { color: designColor.white },
+                '& .directions-label': { color: designColor.white },
+              },
+              textTransform: 'uppercase',
             }}
-          />
-          <Box component="span" className="directions-label">
-            Directions
-          </Box>
-        </Button>
+          >
+            <MapPinIcon
+              sx={{
+                fontSize: { xs: '1rem', md: '1.25rem' },
+                color: designColor.blue.dark,
+              }}
+            />
+            <Box component="span" className="directions-label">
+              Directions
+            </Box>
+          </Button>
+
+          {isMobile && (
+            <>
+              <IconButton
+                aria-label="Choose another maps app"
+                aria-haspopup="menu"
+                aria-expanded={Boolean(mapsMenuAnchor)}
+                onClick={(event) => setMapsMenuAnchor(event.currentTarget)}
+                sx={{
+                  color: designColor.blue.dark,
+                  border: `2px solid ${designColor.blue.dark}`,
+                  borderRadius: '999px',
+                  minWidth: 40,
+                  minHeight: 40,
+                }}
+              >
+                <ExpandMoreIcon />
+              </IconButton>
+              <Menu
+                anchorEl={mapsMenuAnchor}
+                open={Boolean(mapsMenuAnchor)}
+                onClose={() => setMapsMenuAnchor(null)}
+              >
+                <MenuItem
+                  component="a"
+                  href={getMapsUrl('apple', address)}
+                  onClick={() => setMapsMenuAnchor(null)}
+                >
+                  Apple Maps
+                </MenuItem>
+                <MenuItem
+                  component="a"
+                  href={getMapsUrl('google', address)}
+                  onClick={() => setMapsMenuAnchor(null)}
+                >
+                  Google Maps
+                </MenuItem>
+                <MenuItem
+                  component="a"
+                  href={getMapsUrl('waze', address)}
+                  onClick={() => setMapsMenuAnchor(null)}
+                >
+                  Waze
+                </MenuItem>
+              </Menu>
+            </>
+          )}
+        </Box>
 
         <ShareButton fridgeName={name} />
       </Stack>
