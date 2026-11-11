@@ -1,5 +1,7 @@
 import React from 'react';
 import { Metadata } from 'next';
+import NextLink from 'next/link';
+import { List, ListItem, Typography } from '@mui/material';
 import { PamphletParagraph } from 'features/marketing';
 import type { PamphletParagraphProps } from 'features/marketing/components/PamphletParagraph/PamphletParagraph';
 
@@ -52,14 +54,14 @@ const pageContent: { content: PamphletParagraphProps[] } = {
       variant: 'h3',
       title: 'Web App',
       body: [
-        'On our website everyone can access an interactive map and make status updates.',
+        'Access our interactive map, create a profile, follow local fridges, and post status updates.',
       ],
     },
     {
       variant: 'h3',
       title: 'Mobile App',
       body: [
-        'Make a user profile, subscribe to fridges, and upload photos by downloading the mobile app.',
+        'All the features of the web app, plus the ability to attach photos to your status updates.',
       ],
     },
     {
@@ -77,6 +79,13 @@ const pageContent: { content: PamphletParagraphProps[] } = {
   ],
 };
 
+const localizedMaps = [
+  { title: 'Detroit, MI Community Fridge Map', href: '/browse/detroit' },
+  { title: 'Omaha, NE Community Fridge Map', href: '/browse/omaha' },
+  { title: 'Pittsburgh, PA Community Fridge Map', href: '/browse/pittsburgh' },
+  { title: 'Kingston, NY Community Fridge Map', href: '/browse/kingston' },
+];
+
 export default function AboutPage(): React.ReactElement {
   const { content } = pageContent;
   return (
@@ -88,6 +97,28 @@ export default function AboutPage(): React.ReactElement {
           hasDivider={index > 0}
         />
       ))}
+      <PamphletParagraph
+        title="Find a Community Fridge Near You"
+        variant="h2"
+        hasDivider
+      >
+        <Typography variant="body1" sx={{ lineHeight: 1.7, mb: 2 }}>
+          Use the interactive map to locate community refrigerators, drop off
+          food donations, and access free food in your neighborhood.
+        </Typography>
+        <List disablePadding>
+          {localizedMaps.map(({ title, href }) => (
+            <ListItem key={href} disableGutters>
+              <NextLink
+                href={href}
+                style={{ color: 'inherit', textDecoration: 'underline' }}
+              >
+                {title}
+              </NextLink>
+            </ListItem>
+          ))}
+        </List>
+      </PamphletParagraph>
     </div>
   );
 }
