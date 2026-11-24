@@ -1,14 +1,11 @@
 'use client';
 
 import React from 'react';
-import {
-  MapContainer as LeafletMapContainer,
-  TileLayer,
-  useMap,
-} from 'react-leaflet';
+import { MapContainer as LeafletMapContainer, useMap } from 'react-leaflet';
 import { Box } from '@mui/material';
 import { Fridge } from 'types/domain';
 import { MarkerLayer } from './layers/MarkerLayer';
+import { MapTileLayer } from './MapTileLayer';
 import { LegendDrawer } from './LegendDrawer';
 import { useMapSync } from '../hooks/useMapSync';
 import { useMapStore } from 'store/useMapStore';
@@ -116,12 +113,7 @@ export function MapContainer({
       >
         {mapRef && <MapRefCapture mapRef={mapRef} />}
         <MapController fridges={fridges} autoRecenter={!centerOverride} />
-        <TileLayer
-          attribution="&copy; Fridge Finder"
-          url={`https://{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=${lng}`}
-          maxZoom={19}
-          subdomains={['mt0', 'mt1', 'mt2', 'mt3']}
-        />
+        <MapTileLayer language={lng} />
         <MarkerLayer fridges={fridges} onMarkerClick={onMarkerClick} />
       </LeafletMapContainer>
       {!hideLegend && <LegendDrawer />}
