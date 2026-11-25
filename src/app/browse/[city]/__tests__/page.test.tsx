@@ -14,7 +14,14 @@ jest.mock('features/fridge-map/components/BrowsePage', () => ({
   default: jest.fn(),
 }));
 
-it.each(['buffalo', 'detroit', 'kingston', 'omaha', 'pittsburgh'])(
+it.each([
+  'buffalo',
+  'detroit',
+  'greater-boston',
+  'kingston',
+  'omaha',
+  'pittsburgh',
+])(
   'renders the shared browse view with the %s coordinates',
   async (citySlug) => {
     const city = getBrowseCity(citySlug)!;
@@ -40,6 +47,10 @@ it('uses the supplied coordinates for Kingston', () => {
   expect(getBrowseCity('kingston')?.center).toEqual([41.922835, -74.007931]);
 });
 
+it('uses the supplied coordinates for Greater Boston', () => {
+  expect(getBrowseCity('greater-boston')?.center).toEqual([42.3754, -71.1446]);
+});
+
 it('uses the supplied coordinates for Omaha', () => {
   expect(getBrowseCity('omaha')?.center).toEqual([41.273211, -95.954488]);
 });
@@ -51,6 +62,7 @@ it('uses the supplied coordinates for Pittsburgh', () => {
 it.each([
   ['buffalo', 'Buffalo', 'New York'],
   ['detroit', 'Detroit', 'Michigan'],
+  ['greater-boston', 'Greater Boston', 'Massachusetts'],
   ['kingston', 'Kingston', 'New York'],
   ['omaha', 'Omaha', 'Nebraska'],
   ['pittsburgh', 'Pittsburgh', 'Pennsylvania'],

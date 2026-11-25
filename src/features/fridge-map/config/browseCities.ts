@@ -10,6 +10,11 @@ export const browseCities = {
     state: 'New York',
     center: [42.92771778130319, -78.85146118573536],
   },
+  'greater-boston': {
+    name: 'Greater Boston',
+    state: 'Massachusetts',
+    center: [42.3754, -71.1446],
+  },
   detroit: {
     name: 'Detroit',
     state: 'Michigan',

@@ -84,6 +84,10 @@ const localizedMaps = [
   { title: 'Omaha, NE Community Fridge Map', href: '/browse/omaha' },
   { title: 'Pittsburgh, PA Community Fridge Map', href: '/browse/pittsburgh' },
   { title: 'Kingston, NY Community Fridge Map', href: '/browse/kingston' },
+  {
+    title: 'Greater Boston, MA Community Fridge Map',
+    href: '/browse/greater-boston',
+  },
 ];
 
 export default function AboutPage(): React.ReactElement {
