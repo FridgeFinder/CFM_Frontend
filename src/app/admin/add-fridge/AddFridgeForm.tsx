@@ -48,7 +48,10 @@ export const addFridgeSchema = z.object({
   zip: z
     .string()
     .trim()
-    .regex(/^\d{5}(-\d{4})?$/, 'Invalid zip code format'),
+    .regex(
+      /^(?:\d{5}(?:-\d{4})?|[ABCEGHJKLMNPRSTVXY]\d[ABCEGHJKLMNPRSTVWXYZ] ?\d[ABCEGHJKLMNPRSTVWXYZ]\d)$/i,
+      'Invalid ZIP/postal code format'
+    ),
   geoLat: z.number().min(-90, 'Latitude must be at least -90').max(90),
   geoLng: z.number().min(-180, 'Longitude must be at least -180').max(180),
   email: optionalEmailSchema,
@@ -527,8 +530,8 @@ export function AddFridgeForm({
               sx={{ maxWidth: { sm: 160 } }}
             />
             <TextField
-              label="ZIP"
-              placeholder="12210"
+              label="ZIP / Postal Code"
+              placeholder="12210 or M6J 1B4"
               fullWidth
               {...register('zip')}
               error={!!errors.zip}
