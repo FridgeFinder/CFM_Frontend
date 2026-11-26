@@ -35,6 +35,11 @@ export const browseCities = {
     state: 'Pennsylvania',
     center: [40.455346, -79.956382],
   },
+  toronto: {
+    name: 'Toronto',
+    state: 'Ontario',
+    center: [43.6606, -79.3857],
+  },
 } satisfies Record<string, BrowseCity>;
 
 export function getBrowseCity(city: string): BrowseCity | undefined {

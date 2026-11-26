@@ -81,6 +81,7 @@ const pageContent: { content: PamphletParagraphProps[] } = {
 
 const localizedMaps = [
   { title: 'Detroit, MI Community Fridge Map', href: '/browse/detroit' },
+  { title: 'Toronto, ON Community Fridge Map', href: '/browse/toronto' },
   { title: 'Omaha, NE Community Fridge Map', href: '/browse/omaha' },
   { title: 'Pittsburgh, PA Community Fridge Map', href: '/browse/pittsburgh' },
   { title: 'Kingston, NY Community Fridge Map', href: '/browse/kingston' },
