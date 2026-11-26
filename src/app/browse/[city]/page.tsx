@@ -60,7 +60,9 @@ export default async function CityBrowsePage({
             ? 14
             : citySlug === 'pittsburgh'
               ? 11
-              : undefined
+              : citySlug === 'toronto'
+                ? 13
+                : undefined
       }
     />
   );
