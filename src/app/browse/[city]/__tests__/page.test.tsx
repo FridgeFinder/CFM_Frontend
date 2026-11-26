@@ -21,6 +21,7 @@ it.each([
   'kingston',
   'omaha',
   'pittsburgh',
+  'toronto',
 ])(
   'renders the shared browse view with the %s coordinates',
   async (citySlug) => {
@@ -38,7 +39,9 @@ it.each([
             ? 14
             : citySlug === 'pittsburgh'
               ? 11
-              : undefined,
+              : citySlug === 'toronto'
+                ? 13
+                : undefined,
     });
   }
 );
@@ -59,6 +62,10 @@ it('uses the supplied coordinates for Pittsburgh', () => {
   expect(getBrowseCity('pittsburgh')?.center).toEqual([40.455346, -79.956382]);
 });
 
+it('uses the supplied coordinates for Toronto', () => {
+  expect(getBrowseCity('toronto')?.center).toEqual([43.6606, -79.3857]);
+});
+
 it.each([
   ['buffalo', 'Buffalo', 'New York'],
   ['detroit', 'Detroit', 'Michigan'],
@@ -66,6 +73,7 @@ it.each([
   ['kingston', 'Kingston', 'New York'],
   ['omaha', 'Omaha', 'Nebraska'],
   ['pittsburgh', 'Pittsburgh', 'Pennsylvania'],
+  ['toronto', 'Toronto', 'Ontario'],
 ])(
   'generates accurate canonical and social metadata for %s',
   async (citySlug, cityName, state) => {

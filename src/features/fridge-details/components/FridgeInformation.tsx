@@ -216,6 +216,8 @@ function LinkLine({
         />
         <Link
           href={obj.instagram}
+          target="_blank"
+          rel="noopener noreferrer"
           variant="body1"
           sx={{
             color: designColor.blue.dark,
@@ -245,6 +247,8 @@ function LinkLine({
         />
         <Link
           href={obj.website}
+          target="_blank"
+          rel="noopener noreferrer"
           variant="body1"
           sx={{
             color: designColor.blue.dark,
