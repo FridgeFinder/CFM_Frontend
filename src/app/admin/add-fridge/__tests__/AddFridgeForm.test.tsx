@@ -7,7 +7,7 @@ import {
   screen,
   waitFor,
 } from '@testing-library/react';
-import { AddFridgeForm } from '../AddFridgeForm';
+import { addFridgeSchema, AddFridgeForm } from '../AddFridgeForm';
 
 const mockFetch = jest.fn();
 const originalFetch = global.fetch;
@@ -39,6 +39,18 @@ const defaults = {
   website: '',
   notes: '',
 };
+
+describe('AddFridgeForm postal code validation', () => {
+  const zipSchema = addFridgeSchema.shape.zip;
+
+  it.each(['10001', '12345-6789', 'M6J 1B4', 'm6j1b4'])('accepts %s', (zip) => {
+    expect(zipSchema.safeParse(zip).success).toBe(true);
+  });
+
+  it.each(['M6J 1B', 'D6J 1B4', 'M6J 1Q4'])('rejects %s', (zip) => {
+    expect(zipSchema.safeParse(zip).success).toBe(false);
+  });
+});
 
 describe('AddFridgeForm shared photo picker', () => {
   beforeEach(() => {
