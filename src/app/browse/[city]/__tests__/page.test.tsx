@@ -40,7 +40,7 @@ it.each([
             : citySlug === 'pittsburgh'
               ? 11
               : citySlug === 'toronto'
-                ? 13
+                ? 12.5
                 : undefined,
     });
   }
